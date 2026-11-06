@@ -109,6 +109,8 @@ namespace p2
 	extern uint32_t fn_addr__frustum_set_planes;
 	extern uint32_t fn_addr__frustum_cull_box;
 	extern uint32_t fn_addr__cm_point_leaf_num;
+	extern uint32_t fn_addr__override_view_frustum;
+	extern uint32_t fn_addr__cull_node_simd;
 
 	// - client
 	extern uint32_t hk_addr__cviewrenderer_renderview;
@@ -117,7 +119,6 @@ namespace p2
 	extern uint32_t nop_addr__vguiscreen_draw_model;
 	extern uint32_t nop_addr__csimpleworldview_setup;
 	extern uint32_t mod_addr__csimpleworldview_setup;
-	extern uint32_t hk_addr__cportalghost_should_draw;
 	extern uint32_t hk_addr__draw_our_3rd_person_body_mesh;
 	extern uint32_t hk_addr__draw_our_3rd_person_weapon_mesh;
 	extern uint32_t fn_addr__draw_our_3rd_person_weapon_mesh;
@@ -125,7 +126,6 @@ namespace p2
 	extern uint32_t hk_addr__cbaseworldview_draw_setup;
 	extern uint32_t hk_addr__cbaseentity_update_visibility;
 	extern uint32_t hk_addr__cbaseentity_update_visibility_retn;
-	extern uint32_t nop_addr__cpropportal_create_attached_particles;
 	extern uint32_t nop_addr__write_savegame_screenshot_of_size;
 	extern uint32_t mod_addr__envprojectedtexture_should_update;
 	extern uint32_t hk_addr__cviewrenderer_init_fade_data;
@@ -135,11 +135,26 @@ namespace p2
 	extern uint32_t fn_addr__get_bone_transform;
 	extern uint32_t fn_addr__lookup_bone;
 	extern uint32_t fn_addr__get_model_ptr;
+	extern uint32_t mod_addr__areaportalwindow_draw_model;
+	extern uint32_t hk_addr__render_sprite_card_rope;
+	extern uint32_t hk_addr__render_sprite_card_rope_normal;
+	extern uint32_t hk_addr__render_sprite_card_rope_normal_cache;
+	extern uint32_t hk_addr__render_sprites_trail;
+	extern uint32_t hk_addr__render_sprite_card_new;
+	extern uint32_t hk_addr__rope_draw_render_cache_flush;
+	extern uint32_t hk_addr__rope_draw_render_cache_end;
 
 	// - shaderapidx9
 	extern uint32_t nop_addr__cshadermgr_set_pixel_shader;
+	extern uint32_t hk_addr__cmeshdx8_renderpass_pre_draw;
+	extern uint32_t hk_addr__cmeshdx8_renderpass_post_draw;
+	extern uint32_t hk_addr__cmeshdx8_renderpass_for_instances;
 
 	// - studiorender
+	extern uint32_t hk_addr__studio_software_process_mesh;
+	extern uint32_t hk_addr__studio_software_process_mesh_restore;
+	extern uint32_t hk_addr__studio_render_final;
+	extern uint32_t hk_addr__studio_draw_points;
 
 
 	// -------------------------------------------

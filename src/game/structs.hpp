@@ -2755,7 +2755,7 @@ namespace components
 		void(__thiscall* GetWorldSpaceCameraPosition)(void* shaderapi_ptr, float*);
 		void(__thiscall* GetWorldSpaceCameraDirection)(void* shaderapi_ptr, float*);
 		int(__thiscall* GetCurrentNumBones)(void* shaderapi_ptr);
-		char pad[976]; //[1016];
+		char pad[972]; //[1012];
 		IDirect3DBaseTexture9* (__fastcall* GetD3DTexture)(void* shaderapi_ptr, void* ecx, int handle);
 		void* pad97;
 		void* pad98;
@@ -2770,7 +2770,7 @@ namespace components
 		//char pad[0x41C];
 		//IMaterial* (__fastcall* GetBoundMaterial)(void* shaderapi_ptr, void* ecx);
 	};
-	STATIC_ASSERT_OFFSET(IShaderAPIDX8_vtbl, GetBoundMaterial, 0x41C);
+	STATIC_ASSERT_OFFSET(IShaderAPIDX8_vtbl, GetBoundMaterial, 0x418);
 
 	struct IShaderAPIDX8
 	{
@@ -3035,6 +3035,10 @@ namespace components
 		CIndexBuilder m_IndexBuilder;
 		CVertexBuilder m_VertexBuilder;
 	};
+	STATIC_ASSERT_OFFSET(CMeshBuilder, m_VertexBuilder.m_VertexSize_Position, 0xF4);
+	STATIC_ASSERT_OFFSET(CMeshBuilder, m_VertexBuilder.m_nVertexCount, 0x1A4);
+	STATIC_ASSERT_OFFSET(CMeshBuilder, m_VertexBuilder.m_pCurrPosition, 0x1AC);
+	STATIC_ASSERT_OFFSET(CMeshBuilder, m_VertexBuilder.m_pCurrColor, 0x1B4);
 
 	
 	struct ConCommandBase_vtbl;

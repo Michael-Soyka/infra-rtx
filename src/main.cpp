@@ -96,13 +96,18 @@ namespace p2
 			Beep(523, 100);
 		}
 
-		get_module_handle_and_size(game::shaderapidx9_module, "shaderapidx9.dll", T);
-		get_module_handle_and_size(game::studiorender_module, "studiorender.dll", T);
-		// get_module_handle_and_size(game::materialsystem_module, "materialsystem.dll", T);
-		get_module_handle_and_size(game::engine_module, "engine.dll", T);
-		get_module_handle_and_size(game::client_module, "client.dll", T);
-		get_module_handle_and_size(game::server_module, "server.dll", T);
-		get_module_handle_and_size(game::vstdlib_module, "vstdlib.dll", T);
+		if ( get_module_handle_and_size(game::shaderapidx9_module, "shaderapidx9.dll", T)
+			|| get_module_handle_and_size(game::studiorender_module, "studiorender.dll", T)
+			// || get_module_handle_and_size(game::materialsystem_module, "materialsystem.dll", T)
+			|| get_module_handle_and_size(game::engine_module, "engine.dll", T)
+			|| get_module_handle_and_size(game::client_module, "client.dll", T)
+			|| get_module_handle_and_size(game::server_module, "server.dll", T)
+			|| get_module_handle_and_size(game::vstdlib_module, "vstdlib.dll", T) )
+		{
+			Beep(300, 100); Sleep(100); Beep(200, 100);
+			common::log("Main", "Could not find all game modules. Not loading RTX Compatibility Mod.", common::LOG_TYPE::LOG_TYPE_ERROR, true);
+			return TRUE;
+		}
 
 		// wait a little ..
 		Sleep(1u);
@@ -189,7 +194,7 @@ BOOL APIENTRY DllMain(HMODULE hmodule, const DWORD ul_reason_for_call, LPVOID)
 		globals::setup_homepath();
 
 		common::set_console_color_blue(true);
-		common::console_out << "\n  Launching Portal 2 RTX Remix Compatiblity Mod Version [" << COMP_MOD_VERSION_MAJOR << "." << COMP_MOD_VERSION_MINOR << "." << COMP_MOD_VERSION_PATCH << "]";
+		common::console_out << "\n  Launching INFRA RTX Remix Compatiblity Mod Version [" << COMP_MOD_VERSION_MAJOR << "." << COMP_MOD_VERSION_MINOR << "." << COMP_MOD_VERSION_PATCH << "]";
 
 		if constexpr (COMP_MOD_PRE_RELEASE_NUM != 0) {
 			common::console_out << "   - Pre-Release " << std::to_string(COMP_MOD_PRE_RELEASE_NUM) << "\n";
@@ -198,7 +203,7 @@ BOOL APIENTRY DllMain(HMODULE hmodule, const DWORD ul_reason_for_call, LPVOID)
 		}
 
 		common::console_out << "  > Compiled On : " + std::string(__DATE__) + " " + std::string(__TIME__) + "\n";
-		common::console_out << "  > https://github.com/xoxor4d/p2-rtx\n\n";
+		common::console_out << "  > https://github.com/Michael-Soyka/infra-rtx\n\n";
 		common::set_console_color_default();
 
 		if (const auto MH_INIT_STATUS = MH_Initialize(); MH_INIT_STATUS != MH_STATUS::MH_OK)

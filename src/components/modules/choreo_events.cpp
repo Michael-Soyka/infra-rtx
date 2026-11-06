@@ -14,28 +14,6 @@ namespace components
 		bool scene_print = false;
 	}
 
-	// called from main_module::on_renderview()
-	void choreo_events::on_client_frame()
-	{
-		//const auto& mapname = map_settings::get_map_name();
-		//if (!mapname.empty())
-		{
-			if (map_settings::is_level.sp_a4_finale2) // sp_a4_finale2
-			{
-				if (ev_a4_f2_api_portal_spawn.has_elapsed(5.0f))
-				{
-					if (!remix_rayportal::get()->empty())
-					{
-						auto& p = remix_rayportal::get()->get_portal_pair(remix_rayportal::PORTAL_PAIR_1)->get_portal0();
-						p.m_pos = { 2108.0f, 774.0f, -18.0f };
-						p.uncache();
-						ev_a4_f2_api_portal_spawn.reset();
-					}
-				}
-			}
-		}
-	}
-
 	// #
 	// #
 
@@ -149,11 +127,12 @@ namespace components
 		__asm
 		{
 			// og
-			mov     edi, [ebp + 0x10];
-			mov     esi, ecx;
+			mov     ebx, [ebp + 0x10];
+			push    edi;
+			mov     edi, ecx;
 
 			pushad;
-			push    edi;
+			push    ebx;
 			call	scene_ent_on_start_event_hk;
 			add		esp, 4;
 			popad;
@@ -180,14 +159,6 @@ namespace components
 			const auto sname = std::string_view(scene_name);
 			remix_lights::on_event_finish(sname);
 
-			if (map_settings::is_level.sp_a4_finale2)
-			{
-				// scenes/npc/sphere03/bw_a4_finale02_trapintro02.vcd
-				if (sname.ends_with("trapintro02.vcd")) {
-					choreo_events::ev_a4_f2_api_portal_spawn.trigger();
-				}
-			}
-
 			// ------
 
 			// handle remix config transitions added via mapsettings
@@ -201,7 +172,7 @@ namespace components
 		__asm
 		{
 			// og
-			mov     eax, [esi + 0x360]; // CSceneEntity->m_iszSceneFile
+			mov     eax, [esi + 0x364]; // CSceneEntity->m_iszSceneFile
 
 			pushad;
 			push    eax;
@@ -232,7 +203,7 @@ namespace components
 
 		// CSceneEntity::StartEvent :: : can be used to detect the start of scene (vcd) entities
 		utils::hook(p2::hk_addr__scene_ent_on_start_event, scene_ent_on_start_event_stub).install()->quick();
-		HOOK_RETN_PLACE(scene_ent_on_start_event_retn, p2::hk_addr__scene_ent_on_start_event + 5u);
+		HOOK_RETN_PLACE(scene_ent_on_start_event_retn, p2::hk_addr__scene_ent_on_start_event + 6u);
 
 		// CSceneEntity::OnSceneFinished
 		utils::hook::nop(p2::hk_addr__scene_ent_on_finish_event, 6);

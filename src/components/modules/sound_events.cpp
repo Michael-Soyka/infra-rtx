@@ -85,6 +85,7 @@ namespace components
 			popad;
 
 			// og
+			pop		esi;
 			pop     edi;
 			pop		ebx;
 			mov		esp, ebp;

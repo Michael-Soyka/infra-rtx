@@ -1,5 +1,5 @@
 #pragma once
-#include "p2.hpp"
+#include "infra.hpp"
 #include "sdk/inputsystem/c_input_stackstystem.hpp"
 
 #define RENDERER_MOD			game::shaderapidx9_module

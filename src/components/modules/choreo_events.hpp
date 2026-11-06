@@ -23,8 +23,6 @@ namespace components
 			return false;
 		}
 
-		static void on_client_frame();
-
 	private:
 			bool m_initialized = false;
 
@@ -69,14 +67,6 @@ namespace components
 			bool m_triggered = false;
 			std::chrono::steady_clock::time_point m_time_point;
 		};
-
-		// resets all choreo events
-		static void reset_all()
-		{
-			ev_a4_f2_api_portal_spawn.reset();
-		}
-
-		static inline event_single ev_a4_f2_api_portal_spawn = {};
 
 		static inline std::vector<event_single> events = {};
 	};
