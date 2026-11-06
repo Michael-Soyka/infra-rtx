@@ -160,7 +160,7 @@
 # :: This will cause issues with some models (mainly ones with sub-meshes)
 # :: Do not specify models if you do not intend to replace them. There is no benefit.
 # 
-# :: Useful console command: 'xo_mapsettings_get_unbake_info' to log all currently visible model names to 'portal2-rtx/logs/mapsettings_unbake_info.log'
+# :: Useful console command: 'xo_mapsettings_get_unbake_info' to log all currently visible model names to 'infra-rtx/logs/mapsettings_unbake_info.log'
 #
 # ~~ Parameters:
 # <map name> = {    per map
@@ -949,6 +949,63 @@
             { position = [-4578.30, -3638.91, 96.92], radiance = [10.00, 10.00, 10.00], scalar = 25.10, radius = 0.99, smoothness = 0.50, volumetric_scale = 0.00 },
         ], loop = true },
     ]
+
+
+
+# ##########################################################################################################################################
+# >> Sun settings
+#
+# :: Adjusts the sun created from the static map lights. Values are read on map load and on 'Reload MapSettings'.
+#
+# ~~ Parameters (all optional):
+# <map name> = {
+#   intensity =     brightness multiplier, gets multiplied with 'world_sun_scale' (game_settings.toml)                [float] << defaults to 1.0
+#   pitch =         sun direction, same values as 'pitch' of light_environment (-90 = straight down)                  [float]
+#   yaw =           sun direction, same values as the yaw of 'angles' of light_environment (needs pitch + yaw)        [float]
+#   diameter =      visible size of the sun in degrees, larger values give softer shadows                             [float] << defaults to 1.0
+# }
+
+[SUN]
+    main_menu                   = { intensity = 1.0, pitch = -15.0, yaw = 120.0, diameter = 1.0 }  # map rgb 1.5686 1.2984 0.9395
+    infra_c1_m1_office          = { intensity = 1.0, pitch = -15.0, yaw = 120.0, diameter = 1.0 }  # map rgb 1.5686 1.2984 0.9395
+    infra_c2_m1_reserve1        = { intensity = 1.0, pitch = -35.0, yaw = 232.0, diameter = 1.0 }  # map rgb 1.3772 1.2900 1.0253
+    infra_c2_m2_reserve2        = { intensity = 1.0, pitch = -40.0, yaw = 208.0, diameter = 1.0 }  # map rgb 1.5728 1.4745 1.1035
+    infra_c2_m3_reserve3        = { intensity = 1.0, pitch = -40.0, yaw = 208.0, diameter = 1.0 }  # map rgb 1.0858 0.9232 0.6838
+    infra_c3_m2_tunnel2         = { intensity = 1.0, pitch = -50.0, yaw = 114.0, diameter = 1.0 }  # map rgb 1.5302 1.3663 1.1392
+    infra_c3_m3_tunnel3         = { intensity = 1.0, pitch = -50.0, yaw = 114.0, diameter = 1.0 }  # map rgb 2.1936 1.9112 1.4093
+    infra_c3_m4_tunnel4         = { intensity = 1.0, pitch = -50.0, yaw = 114.0, diameter = 1.0 }  # map rgb 2.1936 1.9112 1.4093
+    infra_c4_m2_furnace         = { intensity = 1.0, pitch = -45.0, yaw = 111.0, diameter = 1.0 }  # map rgb 1.7003 1.3888 1.0264
+    infra_c4_m3_tower           = { intensity = 1.0, pitch = -45.0, yaw = 111.0, diameter = 1.0 }  # map rgb 1.7003 1.3888 1.0264
+    infra_c5_m1_watertreatment  = { intensity = 1.0, pitch = -40.0, yaw = 91.0, diameter = 1.0 }  # map rgb 1.8772 1.6078 1.1364
+    infra_c5_m2_sewer           = { intensity = 1.0, pitch = -34.0, yaw = 69.0, diameter = 1.0 }  # map rgb 1.9659 1.8041 1.2316
+    infra_c6_m2_metro           = { intensity = 1.0, pitch = -34.0, yaw = 69.0, diameter = 1.0 }  # map rgb 1.9659 1.8041 1.2316
+    infra_c6_m3_metroride       = { intensity = 1.0, pitch = -30.0, yaw = 51.0, diameter = 1.0 }  # map rgb 1.2500 1.2500 1.2500
+    infra_c6_m6_central         = { intensity = 1.0, pitch = -30.0, yaw = 51.0, diameter = 1.0 }  # map rgb 2.5592 1.9838 1.3550
+    infra_c7_m1_servicetunnel   = { intensity = 1.0, pitch = -30.0, yaw = 51.0, diameter = 1.0 }  # map rgb 2.5592 1.9838 1.3550
+    infra_c7_m1b_skyscraper     = { intensity = 1.0, pitch = -30.0, yaw = 39.0, diameter = 1.0 }  # map rgb 2.1936 1.7004 1.1615
+    infra_c7_m2_bunker          = { intensity = 1.0, pitch = -30.0, yaw = 51.0, diameter = 1.0 }  # map rgb 2.5592 1.9838 1.3550
+    infra_c7_m3_stormdrain      = { intensity = 1.0, pitch = -30.0, yaw = 36.0, diameter = 1.0 }  # map rgb 0.9636 0.8346 0.5745
+    infra_c7_m4_cistern         = { intensity = 1.0, pitch = -30.0, yaw = 36.0, diameter = 1.0 }  # map rgb 0.9636 0.8346 0.5745
+    infra_c7_m5_powerstation    = { intensity = 1.0, pitch = -15.0, yaw = 53.0, diameter = 1.0 }  # map rgb 0.1910 0.1417 0.0956
+    infra_c8_m1_powerstation2   = { intensity = 1.0, pitch = -15.0, yaw = 53.0, diameter = 1.0 }  # map rgb 0.1877 0.0991 0.0575
+    infra_c8_m3_isle1           = { intensity = 1.0, pitch = -5.0, yaw = 15.0, diameter = 1.0 }  # map rgb 0.1669 0.0492 0.0208
+    infra_c8_m4_isle2           = { intensity = 1.0, pitch = -5.0, yaw = 15.0, diameter = 1.0 }  # map rgb 0.0482 0.0165 0.0136
+    infra_c8_m5_isle3           = { intensity = 1.0, pitch = -5.0, yaw = 15.0, diameter = 1.0 }  # map rgb 0.0482 0.0165 0.0136
+    infra_c8_m6_business        = { intensity = 1.0, pitch = -20.0, yaw = 128.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c8_m7_business2       = { intensity = 1.0, pitch = -20.0, yaw = 128.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c8_m8_officeblackout  = { intensity = 1.0, pitch = -10.0, yaw = 5.0, diameter = 1.0 }  # map rgb 0.0067 0.0000 0.0000
+    infra_c9_m1_rails           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c9_m2_tenements       = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c9_m3_river           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c9_m4_villa           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c9_m5_field           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c10_m1_npp            = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c10_m3_roof           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c11_ending_1          = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c11_ending_2          = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c11_ending_3          = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+
+    # no sun in map: infra_c3_m1_tunnel, infra_c5_m2b_sewer2, infra_c6_m1_sewer3, infra_c6_m4_waterplant, infra_c6_m5_minitrain, infra_c10_m2_reactor, infra_ee_binary, infra_ee_city_gates, infra_ee_cubes, infra_ee_hallway, infra_ee_wasteland
 
 
 
