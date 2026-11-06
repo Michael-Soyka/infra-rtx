@@ -243,214 +243,49 @@ namespace components
 	// #
 	// #
 
+	struct menu_chapter
+	{
+		const char *name;
+		std::vector<const char *> maps;
+	};
+
 	void cont_general_maps()
 	{
-		const auto four_row_button_size = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x * 3) / 4.0f;
+		static const std::vector<menu_chapter> chapters =
+		{
+			{ "1: Preparations", { "infra_c1_m1_office" } },
+			{ "2: Just Another Day at Work", { "infra_c2_m1_reserve1", "infra_c2_m2_reserve2", "infra_c2_m3_reserve3" } },
+			{ "3: Forgotten World", { "infra_c3_m1_tunnel", "infra_c3_m2_tunnel2", "infra_c3_m3_tunnel3", "infra_c3_m4_tunnel4" } },
+			{ "4: Heavy Industry of the Past", { "infra_c4_m2_furnace", "infra_c4_m3_tower" } },
+			{ "5: Fresh Water", { "infra_c5_m1_watertreatment", "infra_c5_m2_sewer", "infra_c5_m2b_sewer2" } },
+			{ "6: Public Transport", { "infra_c6_m1_sewer3", "infra_c6_m2_metro", "infra_c6_m3_metroride", "infra_c6_m4_waterplant", "infra_c6_m5_minitrain", "infra_c6_m6_central" } },
+			{ "7: Working Overtime", { "infra_c7_m1_servicetunnel", "infra_c7_m1b_skyscraper", "infra_c7_m2_bunker", "infra_c7_m3_stormdrain", "infra_c7_m4_cistern", "infra_c7_m5_powerstation" } },
+			{ "8: Late for a Meeting", { "infra_c8_m1_powerstation2", "infra_c8_m3_isle1", "infra_c8_m4_isle2", "infra_c8_m5_isle3", "infra_c8_m6_business", "infra_c8_m7_business2", "infra_c8_m8_officeblackout" } },
+			{ "9: To Save a City", { "infra_c9_m1_rails", "infra_c9_m2_tenements", "infra_c9_m3_river", "infra_c9_m4_villa", "infra_c9_m5_field" } },
+			{ "10: Redemption", { "infra_c10_m1_npp", "infra_c10_m2_reactor", "infra_c10_m3_roof" } },
+			{ "11: Epilogue", { "infra_c11_ending_1", "infra_c11_ending_2", "infra_c11_ending_3" } },
+			{ "Extras", { "infra_ee_hallway", "infra_ee_city_gates", "infra_ee_wasteland", "infra_ee_binary", "infra_ee_cubes" } },
+		};
 
-		ImGui::SeparatorTextLarge("The Courtesy Call");
+		const auto four_row_button_size = ( ImGui::GetContentRegionAvail().x - ( ImGui::GetStyle().ItemSpacing.x * 3 ) ) / 4.0f;
 
-		if (ImGui::Button("sp_a1_intro1", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a1_intro1"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a1_intro2", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a1_intro2"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a1_intro3", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a1_intro3"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a1_intro4", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a1_intro4"); }
+		for ( const auto &chapter : chapters )
+		{
+			ImGui::Spacing();
+			ImGui::SeparatorTextLarge( chapter.name );
 
-		if (ImGui::Button("sp_a1_intro5", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a1_intro5"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a1_intro6", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a1_intro6"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a1_intro7", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a1_intro7"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a1_wakeup", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a1_wakeup"); }
+			int column = 0;
+			for ( const auto *map : chapter.maps )
+			{
+				if ( column++ % 4 ) {
+					ImGui::SameLine();
+				}
 
-		if (ImGui::Button("sp_a2_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_intro"); }
-
-		ImGui::Spacing();
-		ImGui::SeparatorTextLarge("The Cold Boot");
-
-		if (ImGui::Button("sp_a2_laser_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_laser_intro"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_laser_stairs", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_laser_stairs"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_dual_lasers", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_dual_lasers"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_laser_over_goo", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_laser_over_goo"); }
-
-		if (ImGui::Button("sp_a2_catapult_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_catapult_intro"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_trust_fling", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_trust_fling"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_pit_flings", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_pit_flings"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_fizzler_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_fizzler_intro"); }
-
-		ImGui::Spacing();
-		ImGui::SeparatorTextLarge("The Return");
-
-		if (ImGui::Button("sp_a2_sphere_peek", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_sphere_peek"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_ricochet", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_ricochet"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_bridge_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bridge_intro"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_bridge_the_gap", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bridge_the_gap"); }
-
-		if (ImGui::Button("sp_a2_turret_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_turret_intro"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_laser_relays", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_laser_relays"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_turret_blocker", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_turret_blocker"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_laser_vs_turret", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_laser_vs_turret"); }
-
-		if (ImGui::Button("sp_a2_pull_the_rug", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_pull_the_rug"); }
-
-		ImGui::Spacing();
-		ImGui::SeparatorTextLarge("The Surprise");
-
-		if (ImGui::Button("sp_a2_column_blocker", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_column_blocker"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_laser_chaining", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_laser_chaining"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_triple_laser", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_triple_laser"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_bts1", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bts1"); }
-
-		if (ImGui::Button("sp_a2_bts2", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bts2"); }
-
-		ImGui::Spacing();
-		ImGui::SeparatorTextLarge("The Escape");
-
-		if (ImGui::Button("sp_a2_bts3", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bts3"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_bts4", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bts4"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_bts5", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bts5"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_bts6", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bts6"); }
-
-		if (ImGui::Button("sp_a2_bts7", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_bts7"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a2_core", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a2_core"); }
-
-		ImGui::Spacing();
-		ImGui::SeparatorTextLarge("The Fall");
-
-		if (ImGui::Button("sp_a3_00", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_00"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a3_01", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_01"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a3_03", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_03"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a3_jump_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_jump_intro"); }
-
-		if (ImGui::Button("sp_a3_bomb_flings", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_bomb_flings"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a3_crazy_box", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_crazy_box"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a3_transition01", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_transition01"); }
-
-		ImGui::Spacing();
-		ImGui::SeparatorTextLarge("The Reunion");
-
-		if (ImGui::Button("sp_a3_speed_ramp", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_speed_ramp"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a3_speed_flings", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_speed_flings"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a3_portal_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_portal_intro"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a3_end", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a3_end"); }
-
-		ImGui::Spacing();
-		ImGui::SeparatorTextLarge("The Itch");
-
-		if (ImGui::Button("sp_a4_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_intro"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_tb_intro", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_tb_intro"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_tb_trust_drop", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_tb_trust_drop"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_tb_wall_button", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_tb_wall_button"); }
-
-		if (ImGui::Button("sp_a4_tb_polarity", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_tb_polarity"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_tb_catch", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_tb_catch"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_stop_the_box", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_stop_the_box"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_laser_catapult", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_laser_catapult"); }
-
-		if (ImGui::Button("sp_a4_laser_platform", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_laser_platform"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_speed_catch", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_speed_catch"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_jump_polarity", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_jump_polarity"); }
-
-		ImGui::Spacing();
-		ImGui::SeparatorTextLarge("The Part Where He Kills You");
-
-		if (ImGui::Button("sp_a4_finale1", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_finale1"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_finale2", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_finale2"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_finale3", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_finale3"); }
-		ImGui::SameLine();
-		if (ImGui::Button("sp_a4_finale4", ImVec2(four_row_button_size, 0))) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("map sp_a4_finale4"); }
-	}
-
-	void cont_general_spawns()
-	{
-		const auto four_row_button_size = ImVec2((ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x * 3) / 4.0f, 0);
-
-		if (ImGui::Button("weighted_cube", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_portal_weighted_cube"); }
-		ImGui::SameLine();
-		if (ImGui::Button("weighted_cube active", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create prop_weighted_cube; ent_fire !picker skin 2"); }
-		ImGui::SameLine();
-		if (ImGui::Button("weighted_cube rusted", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create prop_weighted_cube; ent_fire !picker skin 3"); }
-		ImGui::SameLine();
-		if (ImGui::Button("floor_button", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("give prop_floor_button"); }
-
-		ImGui::Spacing(0, 2);
-
-		if (ImGui::Button("weighted_antique", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_portal_weighted_antique"); }
-		ImGui::SameLine();
-		if (ImGui::Button("companion_cube", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_portal_companion_cube"); }
-		ImGui::SameLine();
-		if (ImGui::Button("reflector_cube", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_portal_reflector_cube"); }
-		ImGui::SameLine();
-		if (ImGui::Button("weighted_sphere", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_portal_weighted_sphere"); }
-
-		ImGui::Spacing(0, 2);
-
-		if (ImGui::Button("paint_bomb_jump ", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_paint_bomb_jump"); }
-		ImGui::SameLine();
-		if (ImGui::Button("paint_bomb_speed", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_paint_bomb_speed"); }
-		ImGui::SameLine();
-		if (ImGui::Button("paint_bomb_portal", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_paint_bomb_portal"); }
-		ImGui::SameLine();
-		if (ImGui::Button("ent_create_paint_bomb_erase", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create_paint_bomb_erase"); }
-
-		ImGui::Spacing(0, 2);
-
-		if (ImGui::Button("personality_core damage", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create npc_personality_core"); }
-		ImGui::SameLine();
-		if (ImGui::Button("personality_core", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("ent_create npc_personality_core; ent_fire !picker skin 1"); }
-		ImGui::SameLine();
-		if (ImGui::Button("corrupted cores", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("prop_dynamic_create npcs/personality_sphere/personality_sphere_skins"); }
-		ImGui::SameLine();
-		if (ImGui::Button("glados head", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("prop_dynamic_create npcs/glados/glados_head_anim"); }
-
-		ImGui::Spacing(0, 2);
-
-		if (ImGui::Button("turret", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("npc_create npc_portal_turret_floor"); }
-		ImGui::SameLine();
-		if (ImGui::Button("atlas", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("prop_dynamic_create player/ballbot/ballbot"); }
-		ImGui::SameLine();
-		if (ImGui::Button("p-body", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("prop_dynamic_create player/eggbot/eggbot"); }
-		ImGui::SameLine();
-		if (ImGui::Button("chell", four_row_button_size)) { interfaces::get()->m_engine->execute_client_cmd_unrestricted("prop_dynamic_create player/chell/player"); }
+				if ( ImGui::Button( map, ImVec2( four_row_button_size, 0 ) ) ) {
+					interfaces::get()->m_engine->execute_client_cmd_unrestricted( utils::va( "map %s", map ) );
+				}
+			}
+		}
 	}
 
 	void cont_general_quickcommands()
@@ -458,12 +293,12 @@ namespace components
 		const auto four_row_button_size = ImVec2((ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x * 3) / 4.0f, 0);
 		const auto three_row_button_size = ImVec2(ImGui::CalcButtonWidthSameRow(3), 0);
 
-		if (ImGui::Button("Fizzle Portals", four_row_button_size)) {
-			interfaces::get()->m_engine->execute_client_cmd_unrestricted("sv_cheats 1; ent_fire prop_portal fizzle");
+		if (ImGui::Button("Noclip", four_row_button_size)) {
+			interfaces::get()->m_engine->execute_client_cmd_unrestricted("sv_cheats 1; noclip");
 		}
 
 		ImGui::SameLine();
-		if (ImGui::Button("No Target (Turret)", four_row_button_size)) {
+		if (ImGui::Button("No Target", four_row_button_size)) {
 			interfaces::get()->m_engine->execute_client_cmd_unrestricted("sv_cheats 1; notarget");
 		}
 
@@ -476,20 +311,6 @@ namespace components
 		if (ImGui::Button("Buddha", four_row_button_size)) {
 			interfaces::get()->m_engine->execute_client_cmd_unrestricted("sv_cheats 1; buddha");
 		}
-
-
-		if (ImGui::Button("Give Portal Gun", three_row_button_size)) {
-			interfaces::get()->m_engine->execute_client_cmd_unrestricted("sv_cheats 1; give_portalgun; upgrade_portalgun");
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Button("Give Potato Gun", three_row_button_size)) {
-			interfaces::get()->m_engine->execute_client_cmd_unrestricted("sv_cheats 1; give_portalgun; upgrade_potatogun");
-		}
-
-		ImGui::SameLine();
-		common::imgui::cvar_toggle_button_bool("sv_portal_placement_never_fail", "Portal Placement Never Fails", three_row_button_size, "sv_portal_placement_never_fail :: Allows you to shoot portals anywhere");
-
 
 		ImGui::Spacing(0, 8);
 		ImGui::SeparatorTextLarge(" Screenshot / HUD Settings ");
@@ -537,12 +358,6 @@ namespace components
 			static float cont_quickcmd_height = 0.0f;
 			cont_quickcmd_height = ImGui::Widget_ContainerWithCollapsingTitle("Quick Commands", cont_quickcmd_height, cont_general_quickcommands,
 				true, ICON_FA_TERMINAL, &ImGuiCol_ContainerBackground, &ImGuiCol_ContainerBorder);
-		}
-
-		{
-			static float cont_spawns_height = 0.0f;
-			cont_spawns_height = ImGui::Widget_ContainerWithCollapsingTitle("Spawns", cont_spawns_height, cont_general_spawns,
-				false, ICON_FA_CHILD, &ImGuiCol_ContainerBackground, &ImGuiCol_ContainerBorder);
 		}
 
 		{
@@ -628,7 +443,7 @@ namespace components
 		ImGui::SameLine();
 		{
 			bool temp_unbake = false;
-			if (common::imgui::toggle_button_bool(&temp_unbake, "Unbake: Log Info to File", two_row_button_size, "Log unbake info for all loaded meshes to \"portal2-rtx\\logs\\mapsettings_unbake_info.log\"\nUseful for UNBAKE (MapSettings)\n~~ cmd: xo_mapsettings_get_unbake_info")) {
+			if (common::imgui::toggle_button_bool(&temp_unbake, "Unbake: Log Info to File", two_row_button_size, "Log unbake info for all loaded meshes to \"infra-rtx\\logs\\mapsettings_unbake_info.log\"\nUseful for UNBAKE (MapSettings)\n~~ cmd: xo_mapsettings_get_unbake_info")) {
 				cmd::ms_unbake_info = temp_unbake;
 			}
 		}
@@ -3690,31 +3505,13 @@ namespace components
 		const auto gs = game_settings::get();
 		gamesettings_bool_widget("Enable LOD Forcing", gs->lod_forcing);
 		gamesettings_bool_widget("Force Graphic Settings", gs->force_graphic_settings);
-		gamesettings_bool_widget("Portal Visibility Culling", gs->portal_visibility_culling);
 		gamesettings_bool_widget("Check Nodes (Visleafs) For Potential Lights", gs->check_nodes_for_potential_lights);
 		gamesettings_bool_widget("Spotlight Billboard Spawning", gs->spotlight_billboard_spawning);
 		gamesettings_bool_widget("Use Brush(model) Fast Path", gs->use_brushfastpath);
 
 		ImGui::Spacing(0, 4);
-		gamesettings_float_widget("VGUI Progress Board Emissive Offset", gs->vgui_progress_board_emissive_offset, 0.0f, 20.0f);
 		gamesettings_float_widget("BIK Emissive Intensity", gs->bik_emissive_intensity, 0.0f, 20.0f);
-
-		ImGui::Spacing(0, 8);
-		ImGui::SeparatorText("  Emancipationgrill  ");
-		ImGui::Spacing(0, 4);
-
-		ImGui::PushID("Emanci");
-		gamesettings_bool_widget("Emissive Proxy", gs->emancipationgrill_emissive_proxy_old);
-		gamesettings_bool_widget("Alpha Modulate1X", gs->emancipationgrill_alpha_modulate1x);
-		gamesettings_bool_widget("Alpha Modulate2X", gs->emancipationgrill_alpha_modulate2x);
-		gamesettings_bool_widget("Alpha Modulate4X", gs->emancipationgrill_alpha_modulate4x);
-		gamesettings_bool_widget("Force Emissive", gs->emancipationgrill_force_emissive);
-		gamesettings_float_widget("Emissive Scale", gs->emancipationgrill_emissive_scale, 0.0f, 200.0f);
-		gamesettings_vec_widget("Color Scalar Center", gs->emancipationgrill_color_scalar_center, 4, 0.0f, 2.0f);
-		gamesettings_vec_widget("Color Scalar SideEmitters", gs->emancipationgrill_color_scalar_side_emitters, 4, 0.0f, 2.0f);
-		gamesettings_bool_widget("Tag as Particle", gs->emancipationgrill_mark_as_particle);
-		gamesettings_bool_widget("Tag as Beam", gs->emancipationgrill_mark_as_beam);
-		ImGui::PopID();
+		gamesettings_float_widget("World Sun Intensity", gs->world_sun_scale, 0.0f, 5.0f, 0.01f);
 
 		ImGui::Spacing(0, 6);
 
@@ -3778,10 +3575,6 @@ namespace components
 			ImGui::Checkbox("Disable R_CullNode", &im->m_disable_cullnode);
 			ImGui::Checkbox("Enable Area Forcing", &im->m_enable_area_forcing);
 			ImGui::Checkbox("Disable MS Unbake", &im->m_disable_ms_unbake_check);
-
-			if (ImGui::SliderInt("Paint Sampler Index", &im->m_debug_paint_sampler_index, 0, 15)) {
-				im->m_debug_paint_sampler_index = std::clamp(im->m_debug_paint_sampler_index, 0, 15);
-			}
 
 			ImGui::Checkbox("Custom First BIK Texture Category", &im->m_debug_bik_use_custom_first_tex_cat);
 			ImGui::BeginDisabled(!im->m_debug_bik_use_custom_first_tex_cat);
@@ -3861,9 +3654,10 @@ namespace components
 		ImGui::Spacing(0.0f, 20.0f);
 
 		ImGui::PushFont(common::imgui::font::BOLD_LARGE);
-		ImGui::CenterText("Portal 2 - RTX REMIX COMPATIBILITY MOD");
+		ImGui::CenterText("INFRA - RTX REMIX COMPATIBILITY MOD");
 		ImGui::PopFont();
-		ImGui::CenterText("                      by #xoxor4d");
+		ImGui::CenterText("                 base by #xoxor4d");
+		ImGui::CenterText("                modded by #michael-soyka");
 
 		ImGui::Spacing(0.0f, 24.0f);
 		ImGui::CenterText("current version");
@@ -3892,9 +3686,8 @@ namespace components
 		ImGui::PopFont();
 
 		ImGui::Spacing(0.0f, 16.0f);
-		CENTER_URL("GitHub Repository", "https://github.com/xoxor4d/p2-rtx");
-		CENTER_URL("GitHub Project Page", "https://xoxor4d.github.io/projects/p2-rtx");
-		CENTER_URL("Latest build", "https://github.com/xoxor4d/p2-rtx/releases");
+		CENTER_URL("Original GitHub Repository", "https://github.com/xoxor4d/p2-rtx");
+		CENTER_URL("GitHub Repository", "https://github.com/Michael-Soyka/infra-rtx");
 
 		ImGui::Spacing(0.0f, 16.0f);
 		ImGui::Separator();
@@ -4113,29 +3906,29 @@ namespace components
 		auto& colors = style.Colors;
 		colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.80f, 1.00f);
 		colors[ImGuiCol_TextDisabled] = ImVec4(0.44f, 0.44f, 0.44f, 1.00f);
-		colors[ImGuiCol_WindowBg] = ImVec4(0.26f, 0.26f, 0.26f, 0.78f);
-		colors[ImGuiCol_ChildBg] = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
-		colors[ImGuiCol_PopupBg] = ImVec4(0.28f, 0.28f, 0.28f, 0.92f);
-		colors[ImGuiCol_Border] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
-		colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.23f);
-		colors[ImGuiCol_FrameBg] = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
-		colors[ImGuiCol_FrameBgHovered] = ImVec4(0.17f, 0.25f, 0.27f, 1.00f);
-		colors[ImGuiCol_FrameBgActive] = ImVec4(0.07f, 0.39f, 0.47f, 0.59f);
-		colors[ImGuiCol_TitleBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.98f);
-		colors[ImGuiCol_TitleBgActive] = ImVec4(0.15f, 0.15f, 0.15f, 0.98f);
+		colors[ImGuiCol_WindowBg] = ImVec4(0.188f, 0.188f, 0.188f, 1.00f);
+		colors[ImGuiCol_ChildBg] = ImVec4(0.16f, 0.16f, 0.16f, 0.86f);
+		colors[ImGuiCol_PopupBg] = ImVec4(0.188f, 0.188f, 0.188f, 1.00f);
+		colors[ImGuiCol_Border] = ImVec4(0.34f, 0.34f, 0.34f, 1.00f);
+		colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+		colors[ImGuiCol_FrameBg] = ImVec4(0.188f, 0.188f, 0.188f, 1.00f);
+		colors[ImGuiCol_FrameBgHovered] = ImVec4(0.15f, 0.30f, 0.35f, 1.00f);
+		colors[ImGuiCol_FrameBgActive] = ImVec4(0.10f, 0.15f, 0.16f, 0.59f);
+		colors[ImGuiCol_TitleBg] = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
+		colors[ImGuiCol_TitleBgActive] = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.15f, 0.15f, 0.15f, 0.98f);
 		colors[ImGuiCol_MenuBarBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 		colors[ImGuiCol_ScrollbarBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.24f);
-		colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.34f, 0.34f, 0.34f, 0.39f);
-		colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.54f, 0.54f, 0.54f, 0.47f);
+		colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+		colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.31f, 0.31f, 0.31f, 0.78f);
 		colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.78f, 0.78f, 0.78f, 0.33f);
-		colors[ImGuiCol_CheckMark] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+		colors[ImGuiCol_CheckMark] = ImVec4(0.53f, 0.53f, 0.53f, 1.00f);
 		colors[ImGuiCol_SliderGrab] = ImVec4(1.00f, 1.00f, 1.00f, 0.39f);
-		colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 1.00f, 1.00f, 0.31f);
-		colors[ImGuiCol_Button] = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
-		colors[ImGuiCol_ButtonHovered] = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
-		colors[ImGuiCol_ButtonActive] = ImVec4(0.40f, 0.45f, 0.45f, 1.00f);
-		colors[ImGuiCol_Header] = ImVec4(0.02f, 0.02f, 0.02f, 0.39f);
+		colors[ImGuiCol_SliderGrabActive] = ImVec4(0.10f, 0.46f, 0.56f, 1.00f);
+		colors[ImGuiCol_Button] = ImVec4(0.121f, 0.129f, 0.141f, 1.00f);
+		colors[ImGuiCol_ButtonHovered] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
+		colors[ImGuiCol_ButtonActive] = ImVec4(0.40f, 0.44f, 0.45f, 1.00f);
+		colors[ImGuiCol_Header] = ImVec4(0.125f, 0.125f, 0.125f, 1.00f);
 		colors[ImGuiCol_HeaderHovered] = ImVec4(0.17f, 0.25f, 0.27f, 0.78f);
 		colors[ImGuiCol_HeaderActive] = ImVec4(0.17f, 0.25f, 0.27f, 0.78f);
 		colors[ImGuiCol_Separator] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
@@ -4144,10 +3937,10 @@ namespace components
 		colors[ImGuiCol_ResizeGrip] = ImVec4(0.43f, 0.43f, 0.43f, 0.51f);
 		colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.07f, 0.39f, 0.47f, 0.59f);
 		colors[ImGuiCol_ResizeGripActive] = ImVec4(0.30f, 0.69f, 0.84f, 0.39f);
-		colors[ImGuiCol_TabHovered] = ImVec4(0.19f, 0.53f, 0.66f, 0.39f);
+		colors[ImGuiCol_TabHovered] = ImVec4(0.22f, 0.33f, 0.36f, 1.00f);
 		colors[ImGuiCol_Tab] = ImVec4(0.00f, 0.00f, 0.00f, 0.37f);
-		colors[ImGuiCol_TabSelected] = ImVec4(0.11f, 0.39f, 0.51f, 0.64f);
-		colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.10f, 0.34f, 0.43f, 0.30f);
+		colors[ImGuiCol_TabSelected] = ImVec4(0.11f, 0.42f, 0.51f, 1.00f);
+		colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 		colors[ImGuiCol_TabDimmed] = ImVec4(0.00f, 0.00f, 0.00f, 0.16f);
 		colors[ImGuiCol_TabDimmedSelected] = ImVec4(1.00f, 1.00f, 1.00f, 0.24f);
 		colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0.50f, 0.50f, 0.50f, 0.00f);
@@ -4172,8 +3965,8 @@ namespace components
 		ImGuiCol_ButtonGreen = ImVec4(0.3f, 0.4f, 0.05f, 0.7f);
 		ImGuiCol_ButtonYellow = ImVec4(0.4f, 0.3f, 0.1f, 0.8f);
 		ImGuiCol_ButtonRed = ImVec4(0.48f, 0.15f, 0.15f, 1.00f);
-		ImGuiCol_ContainerBackground = ImVec4(0.220f, 0.220f, 0.220f, 0.863f);
-		ImGuiCol_ContainerBorder = ImVec4(0.099f, 0.099f, 0.099f, 0.901f);
+		ImGuiCol_ContainerBackground = ImVec4(0.16f, 0.16f, 0.16f, 0.86f);
+		ImGuiCol_ContainerBorder = ImVec4(0.34f, 0.34f, 0.34f, 1.00f);
 	}
 
 	void init_fonts()

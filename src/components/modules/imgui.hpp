@@ -32,8 +32,8 @@ namespace components
 		ImVec4 ImGuiCol_ButtonGreen = ImVec4(0.3f, 0.4f, 0.05f, 0.7f);
 		ImVec4 ImGuiCol_ButtonYellow = ImVec4(0.4f, 0.3f, 0.1f, 0.8f);
 		ImVec4 ImGuiCol_ButtonRed = ImVec4(0.48f, 0.15f, 0.15f, 1.00f);
-		ImVec4 ImGuiCol_ContainerBackground = ImVec4(0.220f, 0.220f, 0.220f, 0.863f);
-		ImVec4 ImGuiCol_ContainerBorder = ImVec4(0.099f, 0.099f, 0.099f, 0.901f);
+		ImVec4 ImGuiCol_ContainerBackground = ImVec4(0.16f, 0.16f, 0.16f, 0.86f);
+		ImVec4 ImGuiCol_ContainerBorder = ImVec4(0.34f, 0.34f, 0.34f, 1.00f);
 
 		// the following default values will be used on release builds
 		bool m_disable_cullnode = false;
