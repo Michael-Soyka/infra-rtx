@@ -4,6 +4,7 @@
 #include "choreo_events.hpp"
 #include "game_settings.hpp"
 #include "imgui.hpp"
+#include "interfaces.hpp"
 #include "map_settings.hpp"
 #include "model_render.hpp"
 #include "remix_lights.hpp"
@@ -99,24 +100,24 @@ namespace components
 		// ----
 		// ----
 
-		choreo_events::on_client_frame();
 		remix_vars::on_client_frame();
 		remix_lights::on_client_frame();
-		main_module::force_cvars();
-
-		// force cvars per frame just to make sure
 		main_module::force_cvars();
 
 		// TODO - find better spot to call this
 		model_render::draw_nocull_markers(); 
 
-		// CM_PointLeafnum :: get current leaf
-		const auto current_leaf = game::get_leaf_from_position(*game::get_current_view_origin());
-		g_player_leaf_update = g_current_leaf != current_leaf;
-		g_current_leaf = current_leaf;
+		// CM_LeafArea has no bounds check in this build, needs a loaded map
+		if ( game::get_hoststate_worldbrush_data() )
+		{
+			// CM_PointLeafnum :: get current leaf
+			const auto current_leaf = game::get_leaf_from_position(*game::get_current_view_origin());
+			g_player_leaf_update = g_current_leaf != current_leaf;
+			g_current_leaf = current_leaf;
 
-		// CM_LeafArea :: get current area the camera is in
-		g_current_area = p2::CM_LeafArea(current_leaf);
+			// CM_LeafArea :: get current area the camera is in
+			g_current_area = p2::CM_LeafArea(current_leaf);
+		}
 
 		// fog
 		if (static bool allow_fog = !common::flags::has_flag("no_fog"); allow_fog)
@@ -222,6 +223,32 @@ namespace components
 	// #
 	// #
 
+#define CHELL_PLAYER_MODEL "models/player/chell/player.mdl"
+#define INFRA_PLAYER_MODEL "models/player/infra_player.mdl"
+	static_assert( sizeof( CHELL_PLAYER_MODEL ) == sizeof( INFRA_PLAYER_MODEL ) );
+
+	// infra does not ship chell :: replaces the path used by CPortal_Player::Precache
+	void replace_player_model( const utils::mem::module_info &module )
+	{
+		if ( !module.handle )
+		{
+			return;
+		}
+
+		static constexpr char old_model[] = CHELL_PLAYER_MODEL;
+		const auto begin = reinterpret_cast<char *>( module.handle );
+		const auto end = begin + module.size;
+		const auto found = std::search( begin, end, std::begin( old_model ), std::end( old_model ) );
+
+		if ( found == end )
+		{
+			common::log( "Main", std::format( "Player model path not found in {}", module.name ) );
+			return;
+		}
+
+		utils::hook::set( found, reinterpret_cast<const BYTE *>( INFRA_PLAYER_MODEL ), sizeof( INFRA_PLAYER_MODEL ) );
+	}
+
 	/**
 	 * Called from CModelLoader::Map_LoadModel
 	 * @param map_name  Name of loading map
@@ -233,6 +260,7 @@ namespace components
 		remix_lights::on_map_load();
 		map_settings::on_map_load(map_name);
 		main_module::force_cvars();
+		interfaces::get()->m_engine->execute_client_cmd_unrestricted( "cl_playermodel " INFRA_PLAYER_MODEL );
 
 		// reset portal vars
 		for (auto i = 0u; i < 4; i++)
@@ -317,7 +345,6 @@ namespace components
 	 */
 	void on_host_disconnect_hk()
 	{
-		choreo_events::reset_all();
 
 		model_render::vgui_progress_board_scalar = 1.0f;
 		model_render::linked_area_portals.clear();
@@ -383,74 +410,6 @@ namespace components
 
 	// #
 	// #
-
-	// Return nullptr a nullptr to skip rendering of ghost - return ent otherwise
-	// - currently used to disable ghosts of chell and the world portalgun so that we can set 'portal_disable_ghosts' to 0
-	// - useful if we move a cube through a portal
-	// #TODO: fixme when remix virtual instances work?
-	C_BaseEntity* cportalghost_should_draw(C_BaseEntity* ent)
-	{
-		int player_team_num = 0;
-
-		const auto base_player = p2::GetSplitScreenViewPlayer();
-		if (base_player)
-		{
-			const auto portal_player = p2::ToPortalPlayer(base_player);
-			if (portal_player) {
-				player_team_num = base_player->m_iTeamNum;
-			}
-		}
-
-		// teamnum 2 = eggbot
-		// teamnum 3 = ballbot
-
-		if (ent && ent->model)
-		{
-			if (ent->model->radius == 0.0f // chell
-				|| (ent->model->radius == 24.6587677f) // portalgun
-				|| (ent->model->radius == 74.0151749f && ent->m_iTeamNum == player_team_num) // models/player/ballbot/ballbot.mdl
-				|| (ent->model->radius == 82.9798126f && ent->m_iTeamNum == player_team_num) // models/player/eggbot/eggbot.mdl
-				|| (ent->model->radius == 76.5784531f) // models/info_character/info_character_player.mdl
-				) {
-				return nullptr; 
-			}
-		}
-
-		return ent;
-	}
-
-	HOOK_RETN_PLACE_DEF(cportalghost_should_draw_retn);
-	__declspec(naked) void cportalghost_should_draw_stub()
-	{
-		__asm
-		{
-			movss   dword ptr[esp], xmm0; // og
-
-			mov		ecx, eax; // save og entity
-
-			pushad;
-			push	eax; // C_BaseEntity
-			call	cportalghost_should_draw;
-			add		esp, 4;
-
-			test	eax, eax;
-			jz		SKIP;
-			popad;
-
-			mov		eax, ecx; // restore og entity
-			jmp		cportalghost_should_draw_retn; // continue normally
-
-		SKIP:
-			popad;
-			add		esp, 4; // ecx was pushed 1 instr. before the hook
-			xor		al, al;
-			pop     esi;
-			mov     esp, ebp;
-			pop     ebp;
-			retn;
-		}
-	}
-
 
 	// client + 0x8DF20 (int C_BasePlayer::GetLocalPlayer :: cdecl (int))
 
@@ -1325,10 +1284,10 @@ namespace components
 			}
 
 			// CRender::OverrideViewFrustum - writes to 'g_Frustum' (g_frustum_ptr)
-			utils::hook::call<void(__fastcall)(void* null_ptr1, void* null_ptr2, VPlane* custom)>(ENGINE_BASE + USE_OFFSET(0xDD270, 0xDC8F0))(nullptr, nullptr, (VPlane*)&f.frustum.planes[1].nX);
+			utils::hook::call<void(__fastcall)(void* null_ptr1, void* null_ptr2, VPlane* custom)>(p2::fn_addr__override_view_frustum)(nullptr, nullptr, (VPlane*)&f.frustum.planes[1].nX);
 
 			// CullNodeSIMD - frustum check
-			if (!utils::hook::call<bool(__cdecl)(const Frustum_t* , mnode_t*)>(ENGINE_BASE + USE_OFFSET(0xC0840, 0xC0260))(g_frustum_ptr, node))
+			if (!utils::hook::call<bool(__cdecl)(const Frustum_t* , mnode_t*)>(p2::fn_addr__cull_node_simd)(g_frustum_ptr, node))
 			{
 				// node visible - restore frustum before returning
 				memcpy_s(g_frustum_ptr, sizeof(Frustum_t), &frustum_backup, sizeof(Frustum_t));
@@ -1901,7 +1860,6 @@ namespace components
 	{
 		__asm
 		{
-			push	ebp;
 			pushad;
 			push	edi; // C_BaseEntity*
 			call	override_entity_vis;
@@ -1909,15 +1867,13 @@ namespace components
 			cmp		eax, 1;
 			jne		SKIP; // jump if eax = 0
 			popad;
-			pop		ebp;
-			mov     byte ptr[ebp - 1], 1 // bDraw
+			mov     bl, 1; // bDraw
 			jmp		base_ent_update_vis_draw_retn;
 
 		SKIP:
 			popad;
-			pop		ebp;
 			// og code without overrides
-			cmp     byte ptr[ebp - 1], 0; // bDraw check
+			test    bl, bl; // bDraw check
 			jz		SKIP_OG;
 			jmp		base_ent_update_vis_draw_retn;
 
@@ -1932,7 +1888,7 @@ namespace components
 
 	struct CViewRender
 	{
-		char pad[0x3E8];
+		char pad[0x2C0];
 		FadeData_t m_FadeData;
 	};
 
@@ -1943,7 +1899,7 @@ namespace components
 		{  0.0f,   0.0f,  1280.0f,  1.0f },
 		{ 10.0f,  15.0f,   800.0f,  1.0f },
 		{  5.0f,  10.0f,  1024.0f,  1.0f },
-		{  0.0f,   0.0f,  1280.0f,  0.1f },
+		{  0.0f,   0.0f,  1280.0f,  0.0f },
 		{ 36.0f, 144.0f,   720.0f,  1.0f },
 		{  0.0f,   0.0f,  1280.0f,  1.0f },
 	};
@@ -1958,7 +1914,7 @@ namespace components
 	{
 		__asm
 		{
-			push	esi; // CViewRender (this)
+			push	edi; // CViewRender (this)
 			call	init_fade_data_hk;
 			add		esp, 4;
 			jmp		init_fade_data_retn;
@@ -2037,8 +1993,7 @@ namespace components
 		game::cvar_uncheat_and_set_int("r_threaded_particles", 0);
 		game::cvar_uncheat_and_set_int("r_entityclips", 0);
 
-		// This fixes a game breaking bug where a surface on a3_crazy_box is not visible and not gel-able
-		if (map_settings::is_level.sp_a3_crazy_box || game_settings::get()->use_brushfastpath.get_as<bool>()) {
+		if (game_settings::get()->use_brushfastpath.get_as<bool>()) {
 			game::cvar_uncheat_and_set_int("cl_brushfastpath", 1);
 		} else {
 			game::cvar_uncheat_and_set_int("cl_brushfastpath", 0);
@@ -2092,6 +2047,9 @@ namespace components
 		// disable fog
 		game::cvar_uncheat_and_set_int("fog_override", 1);
 		game::cvar_uncheat_and_set_int("fog_enable", 0);
+
+		// disable far clip from env_fog_controller
+		game::cvar_uncheat_and_set_int("r_farz", 100000);
 
 		//float ms = 0.0f;
 		//bench.now(&ms);
@@ -2189,9 +2147,9 @@ namespace components
 		utils::hook::set<BYTE>(p2::mod_addr__while_recursive_world_node_01, 0x7E);
 
 		// ^ :: while( ... !R_CullNode) - wrapper function to impl. additional culling control (force areas/leafs + use frustum culling when needed)
-		utils::hook(ENGINE_BASE + USE_OFFSET(0xE725B, 0xE68FB), r_cullnode_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(r_cullnode_cull_retn, ENGINE_BASE + USE_OFFSET(0xE73A2, 0xE6A42)); // 0125
-		HOOK_RETN_PLACE(r_cullnode_skip_retn, ENGINE_BASE + USE_OFFSET(0xE726B, 0xE690B)); // 0125
+		utils::hook(p2::mod_addr__while_recursive_world_node_01 + 3u, r_cullnode_stub, HOOK_JUMP).install()->quick(); // 0125
+		HOOK_RETN_PLACE(r_cullnode_cull_retn, p2::hk_addr__while_recursive_world_node_og_retn); // 0125
+		HOOK_RETN_PLACE(r_cullnode_skip_retn, p2::hk_addr__while_recursive_world_node_force_retn); // 0125
 
 		// ^ :: backface check -> je to jl
 		utils::hook::nop(p2::nop_addr__while_recursive_world_node_02, 2); // okay - draws a little more but not so heavy on perf.
@@ -2221,11 +2179,11 @@ namespace components
 		// ^ next instruction :: OR m_DrawFlags with 0x60 instead of 0x30
 		utils::hook::set<BYTE>(p2::mod_addr__csimpleworldview_setup + 6, 0x60);
 
+		replace_player_model( game::server_module );
+		replace_player_model( game::client_module );
+
 		// C_Portal_Player::DrawModel :: disable 'C_Portal_Player::ShouldSkipRenderingViewpointPlayerForThisView' check to always render chell
 		//utils::hook::nop(CLIENT_BASE + USE_OFFSET(0x27AEBB, 0x274FFB), 2); // 0125 ----> now done with 'draw_our_own_playerbody_mesh_stub' hook
-
-		utils::hook(p2::hk_addr__cportalghost_should_draw, cportalghost_should_draw_stub).install()->quick();
-		HOOK_RETN_PLACE(cportalghost_should_draw_retn, p2::hk_addr__cportalghost_should_draw + 5u);
 
 		// helper var around C_BaseAnimating::DrawModel so we know when we are drawing our player mesh
 		utils::hook(p2::hk_addr__draw_our_3rd_person_body_mesh, draw_our_3rd_person_body_mesh_stub, HOOK_JUMP).install()->quick();
@@ -2278,17 +2236,19 @@ namespace components
 
 
 		// C_BaseEntity::UpdateVisibility
-		utils::hook::nop(p2::hk_addr__cbaseentity_update_visibility, 10); // 0125
+		utils::hook::nop(p2::hk_addr__cbaseentity_update_visibility, 8); // 0125
 		utils::hook(p2::hk_addr__cbaseentity_update_visibility, base_ent_update_vis_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(base_ent_update_vis_draw_retn, p2::hk_addr__cbaseentity_update_visibility + 10u); // 76470
+		HOOK_RETN_PLACE(base_ent_update_vis_draw_retn, p2::hk_addr__cbaseentity_update_visibility + 8u); // 76470
 		HOOK_RETN_PLACE(base_ent_update_vis_skip_retn, p2::hk_addr__cbaseentity_update_visibility_retn); // 764F5
 
 		// #
 
+#if 0	// INFRA has no portals
 		// C_Prop_Portal::CreateAttachedParticles :: disable outer portal particle fx (on high shader/effect settings) (broken anyway)
 		utils::hook::nop(p2::nop_addr__cpropportal_create_attached_particles, 2);
 		utils::hook::nop(p2::nop_addr__cpropportal_create_attached_particles + 11u + 5u, 1);
 		utils::hook::set<DWORD>(USE_OFFSET(p2::nop_addr__cpropportal_create_attached_particles + 11u, CLIENT_BASE + 0x281FB8), 0x00015CE9); // 0F85 5B01 0000 to E9 5C 01 00 00 + 1 nop
+#endif
 
 		// C_BeamSpotLight::ClientThink :: disable spotlight billboards
 		/*utils::hook::nop(CLIENT_BASE + USE_OFFSET(0x0, 0x937A9), 2);
@@ -2310,8 +2270,8 @@ namespace components
 		// Fix quicksave crashing - game tries to take a screenshot for the save file but thats not working with remix
 		// - this disables the 'RenderView' call in 'CViewRender::WriteSaveGameScreenshotOfSize'
 		utils::hook::nop(p2::nop_addr__write_savegame_screenshot_of_size, 4);
-		utils::hook::nop(p2::nop_addr__write_savegame_screenshot_of_size + 12u, 2); // 0x1D6AF5
-		utils::hook::nop(p2::nop_addr__write_savegame_screenshot_of_size + 16u, 2); // 0x1D6AF9
+		utils::hook::nop(p2::nop_addr__write_savegame_screenshot_of_size + 10u, 2);
+		utils::hook::nop(p2::nop_addr__write_savegame_screenshot_of_size + 12u, 2);
 
 		// force some gpu_level 3 logic
 		// C_EnvProjectedTexture::ShouldUpdate :: always return true
