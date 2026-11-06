@@ -3,7 +3,7 @@ name: Bug report
 about: Create a bug report to help improve the mod
 title: "[BUG]"
 labels: bug
-assignees: xoxor4d
+assignees: Michael-Soyka
 
 ---
 

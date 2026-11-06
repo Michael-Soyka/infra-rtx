@@ -1,4 +1,4 @@
-<h1 align="center">Portal 2 RTX Remix Compatibility Mod</h1>
+<h1 align="center">INFRA RTX Remix Compatibility Mod</h1>
 
 <div align="center" markdown="1"> 
 
