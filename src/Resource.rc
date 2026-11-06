@@ -60,11 +60,11 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Portal 2 RTX Remix Compatibility Mod"
-            VALUE "InternalName", "p2-rtx"
+            VALUE "FileDescription", "INFRA RTX Remix Compatibility Mod"
+            VALUE "InternalName", "infra-rtx"
             VALUE "LegalCopyright", "xoxor4d.github.io"
             VALUE "OriginalFilename", "p2-rtx.dll"
-            VALUE "ProductName", "p2-rtx"
+            VALUE "ProductName", "infra-rtx"
         END
     END
     BLOCK "VarFileInfo"

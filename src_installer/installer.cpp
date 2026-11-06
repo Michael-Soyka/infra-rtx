@@ -20,16 +20,16 @@ const char* line_pad = "  ";
 #define PAD line_pad
 #define PAD_INL "  "
 
-const wchar_t* installer_name = L"Portal2-Remix-Installer/1.0";
-const wchar_t* user_agent = L"User-Agent: Portal2-Remix-Installer";
-const char* file_dialog_filter = "Portal2 Executable\0portal2.exe\0All Files\0*.*\0";
-const char* file_dialog_title = "Select your portal2.exe";
+const wchar_t* installer_name = L"INFRA-Remix-Installer/1.0";
+const wchar_t* user_agent = L"User-Agent: INFRA-Remix-Installer";
+const char* file_dialog_filter = "INFRA Executable\0infra.exe\0All Files\0*.*\0";
+const char* file_dialog_title = "Select your infra.exe";
 
 const char* wiki_link = "https://github.com/xoxor4d/p2-rtx/wiki";
-const std::string comp_mod_zip_name = "Portal2-Remix-CompatibilityMod";
-const wchar_t* comp_mod_zip_name_wide = L"Portal2-Remix-CompatibilityMod";
-#define COMP_MOD_FOLDER "portal2-rtx"
-const char* comp_mod_folder = "portal2-rtx";
+const std::string comp_mod_zip_name = "INFRA-Remix-CompatibilityMod";
+const wchar_t* comp_mod_zip_name_wide = L"INFRA-Remix-CompatibilityMod";
+#define COMP_MOD_FOLDER "infra-rtx"
+const char* comp_mod_folder = "infra-rtx";
 const char* comp_mod_dll = "p2-rtx.dll";
 
 struct RemoteModConfig
