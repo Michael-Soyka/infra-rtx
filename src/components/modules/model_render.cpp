@@ -498,17 +498,8 @@ namespace components
 		dev->GetVertexShader(&ff_model::s_shader);
 		dev->SetTransform(D3DTS_WORLD, &game::IDENTITY);
 
-		// get origin of wheatly for flashlight calc. on bts3
-		if (pInfo.flags == 0x9 && pInfo.pModel->radius == 19.3280182f &&
-			map_settings::is_level.sp_a2_bts3)
-		{
-			if (std::string_view(pInfo.pModel->szPathName).contains("sphere")) {
-				remix_lights::bts3_set_flashlight_start_pos(pInfo.origin);
-			}
-		}
-
 		// MODELFLAG_MATERIALPROXY | MODELFLAG_STUDIOHDR_AMBIENT_BOOST
-		else if (pInfo.flags == 0x80000011 || pInfo.flags == 0x11)
+		if (pInfo.flags == 0x80000011 || pInfo.flags == 0x11)
 		{
 			VMatrix mat = {};
 			mat.m[0][0] = pInfo.pModelToWorld->m_flMatVal[0][0];
@@ -1127,21 +1118,39 @@ namespace components
 		}
 	}
 
-	HOOK_RETN_PLACE_DEF(RopeManager_DrawRenderCache_retn_addr);
-	void __declspec(naked) RopeManager_DrawRenderCache_stub()
+	HOOK_RETN_PLACE_DEF(RopeManager_DrawRenderCache_flush_retn_addr);
+	void __declspec(naked) RopeManager_DrawRenderCache_flush_stub()
 	{
 		__asm
 		{
 			pushad;
-			lea     eax, [ebp - 0x2F4];
+			lea     eax, [ebp - 0x2F8];
 			push	eax; // builder
 			call	RopeManager_DrawRenderCache_mid_hk;
 			add		esp, 4;
 			popad;
 
 			// og
-			mov     eax, [ebp - 0x200];
-			jmp		RopeManager_DrawRenderCache_retn_addr;
+			mov     edx, [ebp - 0x204];
+			jmp		RopeManager_DrawRenderCache_flush_retn_addr;
+		}
+	}
+
+	HOOK_RETN_PLACE_DEF(RopeManager_DrawRenderCache_end_retn_addr);
+	void __declspec(naked) RopeManager_DrawRenderCache_end_stub()
+	{
+		__asm
+		{
+			pushad;
+			lea     eax, [ebp - 0x2F8];
+			push	eax; // builder
+			call	RopeManager_DrawRenderCache_mid_hk;
+			add		esp, 4;
+			popad;
+
+			// og
+			mov     eax, [ebp - 0x204];
+			jmp		RopeManager_DrawRenderCache_end_retn_addr;
 		}
 	}
 
@@ -1744,10 +1753,6 @@ namespace components
 				{
 					ctx.save_texture(dev, 0);
 					dev->SetTexture(0, tex_addons::glass_shards);
-
-					if (map_settings::is_level.sp_a1_intro1) {
-						model_render::set_remix_texture_hash(dev, 0xB9C1E4B); // glass_shards_intro1
-					}
 				}
 			}
 			else if (ctx.info.material_name.starts_with("gla"))
@@ -1760,15 +1765,6 @@ namespace components
 						ctx.save_texture(dev, 0);
 						dev->SetTexture(0, tex_addons::glass_window_lamps);
 					}
-				}
-			}
-			// models/player/chell/gambler_eyeball_ l/r
-			else if (ctx.info.material_name.contains("models/player/chell/gambler_eyeball"))
-			{
-				if (const auto basemap2 = shaderapi->vtbl->GetD3DTexture(shaderapi, nullptr, ctx.info.buffer_state.m_BoundTexture[1]); basemap2) 
-				{
-					ctx.save_texture(dev, 0);
-					dev->SetTexture(0, basemap2);
 				}
 			}
 
@@ -1909,12 +1905,6 @@ namespace components
 					//ctx.save_tss(dev, D3DTSS_TEXTURETRANSFORMFLAGS);
 					//dev->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2);
 				}
-			}
-
-			else if (ctx.info.material_name.ends_with("01") && ctx.info.material_name == "models/props_hub/glados_chamber_dest01")
-			{
-				ctx.save_texture(dev, 0);
-				dev->SetTexture(0, tex_addons::black_shader);
 			}
 
 			dev->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX3);
@@ -2257,69 +2247,6 @@ namespace components
 						dev->SetVertexShader(nullptr);
 						dev->SetTransform(D3DTS_WORLD, &ctx.info.buffer_state.m_Transform[0]);
 
-						// dirty hack to invert the portal direction in the spawn area on sp_a4_finale2 because
-						// the static overlays on portals (that we use to identify and render the rayportals) are rendered on the inside of the moving object
-						if (map_settings::is_level.sp_a4_finale2 && g_current_area == 4)
-						{
-							// invert along the x axis
-							ctx.info.buffer_state.m_Transform[0].m[0][0] = -1;
-							dev->SetTransform(D3DTS_WORLD, &ctx.info.buffer_state.m_Transform[0]);
-
-							if (primlist)
-							{
-								IDirect3DVertexBuffer9* vb = nullptr; UINT t_stride = 0u, t_offset = 0u;
-								dev->GetStreamSource(0, &vb, &t_offset, &t_stride);
-
-								IDirect3DIndexBuffer9* ib = nullptr;
-								if (SUCCEEDED(dev->GetIndices(&ib)))
-								{
-									WORD* ib_data; // lock index buffer to retrieve the relevant vertex indices
-									if (SUCCEEDED(ib->Lock(0, 0, (void**)&ib_data, D3DLOCK_READONLY)))
-									{
-										// add relevant indices without duplicates
-										std::unordered_set<std::uint16_t> indices; indices.reserve(primlist->m_NumIndices);
-
-										for (auto i = 0u; i < (std::uint32_t)primlist->m_NumIndices; i++) {
-											indices.insert(ib_data[primlist->m_FirstIndex + i]);
-										}
-
-										ib->Unlock();
-
-										// get the range of vertices that we are going to work with
-										UINT min_vert = 0u, max_vert = 0u;
-										{
-											auto [min_it, max_it] = std::minmax_element(indices.begin(), indices.end());
-											min_vert = *min_it;
-											max_vert = *max_it;
-										}
-
-										void* src_buffer_data; // lock vertex buffer from first used vertex (in total bytes) to X used vertices (in total bytes)
-										if (SUCCEEDED(vb->Lock(min_vert * t_stride, max_vert * t_stride, &src_buffer_data, 0)))
-										{
-											struct src_vert {
-												Vector pos; Vector normal; Vector2D tc;
-											};
-
-											for (auto i : indices)
-											{
-												// we need to subtract min_vert because we locked @ min_vert which is the start of our lock
-												i -= static_cast<std::uint16_t>(min_vert);
-
-												const auto v_pos_in_src_buffer = i * t_stride;
-												const auto src = reinterpret_cast<src_vert*>(((DWORD)src_buffer_data + v_pos_in_src_buffer));
-
-												// invert x coordinate as we scaled X by -1 using the world matrix
-												src->pos.x = src->pos.x * -1.0f - 0.5f;
-
-												// flip normal
-												src->normal *= -1.0f;
-											}
-											vb->Unlock();
-										}
-									}
-								}
-							}
-						}
 					}
 				} // end 'was_portal_related'
 				else
@@ -2673,11 +2600,6 @@ namespace components
 					fAdditiveSelfBlendWeight = v[2];
 				}
 
-#ifndef SPRITE_TRAIL_TEST
-				const bool is_cleanser = ctx.info.material_name == "effects/portal_cleanser"
-									  || ctx.info.material_name == "effects/cleanser_edge";
-#endif
-
 				// FF sparks look really good but are heavy on the framerate + it messes up the trail shot by the portal gun ....
 				const bool is_spark = ctx.info.material_name.starts_with("particle/sparks/"); //|| ctx.info.material_name == "particle/particle_glow_02_additive_trail";
 
@@ -2685,28 +2607,8 @@ namespace components
 					model_render::set_remix_emissive_intensity(dev, 2.0f);
 				}
 
-#ifdef SPRITE_TRAIL_TEST
 				if (is_spline)
 				{
-#else
-				if (is_spline && !is_spark &&
-					(is_cleanser
-						//|| is_spark
-						|| map_settings::is_level.sp_a1_wakeup
-						|| ctx.info.buffer_state.m_Transform[2].m[3][2] > -2.0f // portal gun pickup beams (the two materials in the next check)
-						|| (g_player_current_area == 2 && map_settings::is_level.sp_a1_intro3) // allow in this area
-						|| (g_player_current_area == 5 && map_settings::is_level.sp_a2_intro) // allow in this area
-						)
-					)
-				{
-#endif
-#ifndef SPRITE_TRAIL_TEST
-					if (is_cleanser
-						//|| is_spark
-						|| map_settings::is_level.sp_a1_wakeup
-						|| ctx.info.material_name.starts_with("particle/beam_generic")
-						|| ctx.info.material_name.ends_with("electricity_beam_01"))
-#endif
 					{
 						ctx.save_vs(dev);
 						dev->SetVertexShader(nullptr);
@@ -2946,9 +2848,15 @@ namespace components
 			// hanging cables - verts modified in RopeManager_DrawRenderCache_mid_hk
 			else if (mesh->m_VertexFormat == 0x24900005)
 			{
-				//ctx.modifiers.do_not_render = true;
-				ctx.save_texture(dev, 0);
-				dev->SetTexture(0, tex_addons::black_shader);
+				if ( ctx.info.material_name == "cable/invisible" ) {
+					ctx.modifiers.do_not_render = true;
+				}
+
+				if ( ctx.info.material_name == "cable/cable" )
+				{
+					ctx.save_texture(dev, 0);
+					dev->SetTexture(0, tex_addons::black_shader);
+				}
 
 				ctx.save_vs(dev);
 				dev->SetVertexShader(nullptr);
@@ -2988,113 +2896,6 @@ namespace components
 				}
 
 				bool disable_vertex_color_modulation = false;
-
-				// get flashlight end pos (wheatly) on bts3
-				if (map_settings::is_level.sp_a2_bts3)
-				{
-					if (ctx.info.material_name == "particle/flashlight_glow")
-					{
-						Vector flashlight_pos = {};
-
-						IDirect3DVertexBuffer9* vb = nullptr; UINT t_stride = 0u, t_offset = 0u;
-						dev->GetStreamSource(0, &vb, &t_offset, &t_stride);
-
-						IDirect3DIndexBuffer9* ib = nullptr;
-						if (SUCCEEDED(dev->GetIndices(&ib)))
-						{
-							void* ib_data; // lock index buffer to retrieve the relevant vertex indices
-							if (SUCCEEDED(ib->Lock(0, 0, &ib_data, D3DLOCK_READONLY)))
-							{
-								// add relevant indices without duplicates
-								std::unordered_set<std::uint16_t> indices; indices.reserve(primlist->m_NumIndices);
-
-								for (auto i = 0u; i < (std::uint32_t)primlist->m_NumIndices; i++) {
-									indices.insert(static_cast<std::uint16_t*>(ib_data)[primlist->m_FirstIndex + i]);
-								}
-
-								ib->Unlock();
-
-								// get the range of vertices that we are going to work with
-								UINT min_vert = 0u, max_vert = 0u;
-								{
-									auto [min_it, max_it] = std::minmax_element(indices.begin(), indices.end());
-									min_vert = *min_it;
-									max_vert = *max_it;
-								}
-
-								void* src_buffer_data;
-
-								// lock vertex buffer from first used vertex (in total bytes) to X used vertices (in total bytes)
-								if (SUCCEEDED(vb->Lock(min_vert * t_stride, max_vert * t_stride, &src_buffer_data, D3DLOCK_READONLY)))
-								{
-									struct src_vert_y {
-										Vector pos;
-									};
-
-									for (auto i : indices)
-									{
-										// we need to subtract min_vert because we locked @ min_vert which is the start of our lock
-										i -= static_cast<std::uint16_t>(min_vert);
-
-										const auto v_pos_in_src_buffer = i * t_stride;
-										const auto src = reinterpret_cast<src_vert_y*>(((DWORD)src_buffer_data + v_pos_in_src_buffer));
-
-										flashlight_pos += src->pos;
-									}
-
-									flashlight_pos /= static_cast<float>(indices.size());
-									vb->Unlock();
-								}
-							}
-						}
-						remix_lights::bts3_set_flashlight_end_pos(flashlight_pos);
-					}
-				}
-				else if (map_settings::is_level.sp_a4_finale4)
-				{
-					DWORD dstblend;
-					dev->GetRenderState(D3DRS_DESTBLEND, &dstblend);
-
-					// fix emissive smoke near end
-					if (dstblend == D3DBLEND_ONE)
-					{
-						if (ctx.info.material_name == "particle/smoke1/smoke1_additive")
-						{
-							//ctx.save_rs(dev, D3DRS_DESTBLEND);
-							//dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA); // disables emissive smoke
-
-							ctx.save_rs(dev, D3DRS_TEXTUREFACTOR);
-							ctx.save_tss(dev, D3DTSS_COLOROP);
-							ctx.save_tss(dev, D3DTSS_COLORARG2);
-							ctx.save_tss(dev, D3DTSS_ALPHAOP);
-							ctx.save_tss(dev, D3DTSS_ALPHAARG2);
-							dev->SetRenderState(D3DRS_TEXTUREFACTOR, D3DCOLOR_RGBA(30, 30, 30, 255));
-							dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-							dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-							dev->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
-							dev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-							disable_vertex_color_modulation = true;
-						}
-						/*else if (ctx.info.material_name == "particle/star_noz")
-						{
-							ctx.save_rs(dev, D3DRS_DESTBLEND);
-							dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-
-							ctx.save_tss(dev, D3DTSS_COLOROP);
-							ctx.save_tss(dev, D3DTSS_COLORARG2);
-							ctx.save_rs(dev, D3DRS_TEXTUREFACTOR);
-							dev->SetRenderState(D3DRS_TEXTUREFACTOR, D3DCOLOR_COLORVALUE(1, 1, 1, 1.0f));
-							dev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE4X);
-							dev->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-							disable_vertex_color_modulation = true;
-						}*/
-					}
-					/*else if (dstblend == D3DBLEND_INVSRCALPHA && ctx.info.material_name.ends_with("spray1_addself"))
-					{
-						ctx.save_rs(dev, D3DRS_DESTBLEND);
-						dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-					}*/
-				}
 
 				if (ctx.info.material_name == "particle/confetti/confetti") 
 				{
@@ -3177,13 +2978,7 @@ namespace components
 				//int break_me = 0;
 				//lookat_vertex_decl(dev, primlist);
 
-#ifdef SPRITE_TRAIL_TEST
 				{
-#else
-				if (map_settings::is_level.sp_a4_finale4)
-				{
-					model_render_hlslpp::fix_sprite_trail_particles(ctx, primlist);
-#endif
 					ctx.save_vs(dev); 
 					dev->SetVertexShader(nullptr);
 					dev->SetPixelShader(nullptr);
@@ -3354,14 +3149,14 @@ namespace components
 		{
 			pushad;
 			push	ebx; // CPrimList
-			push	esi; // CMeshDX8
+			push	dword ptr[ebp - 4]; // CMeshDX8
 			call	cmeshdx8_renderpass_pre_draw;
 			add		esp, 8;
 			popad;
 
 			// og code
-			mov		ecx, [esi + 0x4C];
-			test	ecx, ecx;
+			mov		ecx, [ebp - 4];
+			mov		eax, [ecx + 0x4C];
 			jmp		cmeshdx8_renderpass_pre_draw_retn_addr;
 		}
 	}
@@ -3721,9 +3516,9 @@ namespace components
 		__asm
 		{
 			// og code
-			mov		ecx, [esi + 0x50];
-			push	ecx;
 			push	eax;
+			push	ecx;
+			push	esi;
 
 			//pushad;
 			call	cmeshdx8_renderpass_post_draw; // instead of 'edx' (DrawIndexedPrimitive)
@@ -3743,12 +3538,6 @@ namespace components
 		}
 	}
 
-	void cmeshdx8_renderpass_pass_for_instances_post_draw([[maybe_unused]] void* device_ptr, D3DPRIMITIVETYPE type, std::int32_t base_vert_index, std::uint32_t min_vert_index, std::uint32_t num_verts, std::uint32_t start_index, std::uint32_t prim_count)
-	{
-		const auto dev = game::get_d3d_device();
-		dev->DrawIndexedPrimitive(type, base_vert_index, min_vert_index, num_verts, start_index, prim_count);
-	}
-
 	//DWORD* instance_info_ptr = nullptr;
 
 	HOOK_RETN_PLACE_DEF(cmeshdx8_renderpass_pass_for_instances_retn_addr);
@@ -3756,32 +3545,16 @@ namespace components
 	{
 		__asm
 		{
-			//mov		instance_info_ptr, eax;
-			push    eax; // og
-			mov     eax, [edx]; // og
+			// og
+			mov     esi, [edi + 0x20];
+			mov     edx, [esi];
 
 			pushad;
-			push	ebx; // MeshInstanceData_t
-			push	ecx; // CMeshDX8
+			push	edi; // MeshInstanceData_t
+			push	esi; // CMeshDX8
 			call	cmeshdx8_renderpass_pass_for_instances_pre_draw;
 			add		esp, 8;
 			popad;
-
-
-			// og code
-			call    eax; // mesh->VertexCount
-			mov     ecx, [ebp - 4];
-			mov     edx, [esi + 0x148];
-			push    eax;
-			push    0;
-			push    0;
-			push    ecx;
-			push    edi;
-			//call    edx; // DrawIndexedPrimitive
-			call	cmeshdx8_renderpass_pass_for_instances_post_draw;
-			add		esp, 0x1C;
-			//call	cmeshdx8_renderpass_post_draw; // instead of 'edx' (DrawIndexedPrimitive)
-			//add		esp, 0x1C;
 
 			jmp		cmeshdx8_renderpass_pass_for_instances_retn_addr;
 		}
@@ -4133,7 +3906,7 @@ namespace components
 			__asm
 			{
 				mov		R_StudioDrawPoints_pSubModel_addr, eax; // save addr
-				mov     eax, [edi + 0xB8]; // og
+				mov     eax, [edi + 0xD4]; // og
 
 				pushad;
 				push	R_StudioDrawPoints_pSubModel_addr;
@@ -4143,7 +3916,7 @@ namespace components
 				popad;
 
 				// og
-				mov     eax, [edi + 0xB8];
+				mov     eax, [edi + 0xD4];
 				jmp		R_StudioDrawPoints_retn_addr;
 			}
 		}
@@ -4352,15 +4125,15 @@ namespace components
 		XASSERT(tbl_hk::model_renderer::table.init(tbl_hk::model_renderer::_interface) == false);
 		XASSERT(tbl_hk::model_renderer::table.hook(&tbl_hk::model_renderer::DrawModelExecute::Detour, tbl_hk::model_renderer::DrawModelExecute::Index) == false);
 
-		utils::hook(RENDERER_BASE + USE_OFFSET(0xB1B3, 0xAD23), cmeshdx8_renderpass_pre_draw_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(cmeshdx8_renderpass_pre_draw_retn_addr, RENDERER_BASE + USE_OFFSET(0xB1B8, 0xAD28)); // 0125
+		utils::hook(p2::hk_addr__cmeshdx8_renderpass_pre_draw, cmeshdx8_renderpass_pre_draw_stub, HOOK_JUMP).install()->quick(); // 0125
+		HOOK_RETN_PLACE(cmeshdx8_renderpass_pre_draw_retn_addr, p2::hk_addr__cmeshdx8_renderpass_pre_draw + 6u); // 0125
 
-		utils::hook(RENDERER_BASE + USE_OFFSET(0xB285, 0xADF5), cmeshdx8_renderpass_post_draw_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(cmeshdx8_renderpass_post_draw_retn_addr, RENDERER_BASE + USE_OFFSET(0xB28C, 0xADFC)); // 0125
+		utils::hook(p2::hk_addr__cmeshdx8_renderpass_post_draw, cmeshdx8_renderpass_post_draw_stub, HOOK_JUMP).install()->quick(); // 0125
+		HOOK_RETN_PLACE(cmeshdx8_renderpass_post_draw_retn_addr, p2::hk_addr__cmeshdx8_renderpass_post_draw + 5u); // 0125
 
 		// model and tluc fastpath test
-		utils::hook(RENDERER_BASE + USE_OFFSET(0xA9FA, 0xA56A), cmeshdx8_renderpass_pass_for_instances_stub, HOOK_JUMP).install()->quick();
-		HOOK_RETN_PLACE(cmeshdx8_renderpass_pass_for_instances_retn_addr, RENDERER_BASE + USE_OFFSET(0xAA11, 0xA581));
+		utils::hook(p2::hk_addr__cmeshdx8_renderpass_for_instances, cmeshdx8_renderpass_pass_for_instances_stub, HOOK_JUMP).install()->quick();
+		HOOK_RETN_PLACE(cmeshdx8_renderpass_pass_for_instances_retn_addr, p2::hk_addr__cmeshdx8_renderpass_for_instances + 5u);
 
 
 		// brushmodels - cubes - etc
@@ -4378,10 +4151,13 @@ namespace components
 #endif
 
 		// C_FuncAreaPortalWindow::DrawModel :: disable drawing Area Portal Brushmodels
-		utils::hook::nop(CLIENT_BASE + USE_OFFSET(0xA164E, 0x9DE9E), 2); // 0125
+		utils::hook::set<DWORD>(p2::mod_addr__areaportalwindow_draw_model, 0xC2C033); // xor eax, eax; ret 8
+		utils::hook::set<WORD>(p2::mod_addr__areaportalwindow_draw_model + 3u, 0x0008);
 
+#if 0	// INFRA has no portals
 		// C_Prop_Portal::ClientThink :: hook to get portal 1/2 m_fOpenAmount member var
 		utils::hook(CLIENT_BASE + USE_OFFSET(0x286142, 0x280012), prop_portal_client_think_stub, HOOK_JUMP).install()->quick(); // 0125
+#endif
 
 		// #
 		// Window portals
@@ -4396,6 +4172,7 @@ namespace components
 		HOOK_RETN_PLACE(render_portal_view_to_backbuffer_retn, CLIENT_BASE + USE_OFFSET(0x2BE7EF, 0x2B7D5F));
 #endif
 
+#if 0	// INFRA has no portal gel
 		// Shader_DrawSurfaceDynamic -> BuildMSurfaceVertexArrays :: change texcoords when building the vertexbuffer
 		// so that we do not need to lock and unlock for each BSP surface when rendering
 		utils::hook(ENGINE_BASE + USE_OFFSET(0xF7D16, 0xF7193), BuildMSurfaceVertexArrays_stub, HOOK_JUMP).install()->quick(); // 0125
@@ -4411,43 +4188,49 @@ namespace components
 
 		utils::hook(ENGINE_BASE + USE_OFFSET(0x6FC2B, 0x6F73B), draw_painted_bmodel_array_surfaces_stub, HOOK_JUMP).install()->quick(); // 0125
 		HOOK_RETN_PLACE(draw_painted_bmodel_array_surfaces_retn_addr, ENGINE_BASE + USE_OFFSET(0x6FC30, 0x6F740)); // 0125
+#endif
 
 		// ----
 
 		// modify trail vertices upon creation, right before the mesh gets unlocked
 #ifdef SPRITE_TRAIL_TEST
 		// C_OP_RenderRope::RenderSpriteCard_Internal<FastRopeVertex_t>
-		utils::hook::nop(CLIENT_BASE + USE_OFFSET(0x61ED14, 0x6165E4), 6); // 0125
-		utils::hook(CLIENT_BASE + USE_OFFSET(0x61ED14, 0x6165E4), RenderSpriteCardFastRopeVertex_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(RenderSpriteCardFastRopeVertex_retn_addr, CLIENT_BASE + USE_OFFSET(0x61ED1A, 0x6165EA)); // 0125
+		utils::hook::nop(p2::hk_addr__render_sprite_card_rope, 6); // 0125
+		utils::hook(p2::hk_addr__render_sprite_card_rope, RenderSpriteCardFastRopeVertex_stub, HOOK_JUMP).install()->quick(); // 0125
+		HOOK_RETN_PLACE(RenderSpriteCardFastRopeVertex_retn_addr, p2::hk_addr__render_sprite_card_rope + 6u); // 0125
 
 		// C_OP_RenderRope::RenderSpriteCard_Internal<FastRopeVertexNormal_t>
-		utils::hook::nop(CLIENT_BASE + USE_OFFSET(0x6202F6, 0x617BC6), 6); // 0125
-		utils::hook(CLIENT_BASE + USE_OFFSET(0x6202F6, 0x617BC6), RenderSpriteCardFastRopeVertexNormal_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(RenderSpriteCardFastRopeVertexNormal_retn_addr, CLIENT_BASE + USE_OFFSET(0x6202FC, 0x617BCC)); // 0125
+		utils::hook::nop(p2::hk_addr__render_sprite_card_rope_normal, 6); // 0125
+		utils::hook(p2::hk_addr__render_sprite_card_rope_normal, RenderSpriteCardFastRopeVertexNormal_stub, HOOK_JUMP).install()->quick(); // 0125
+		HOOK_RETN_PLACE(RenderSpriteCardFastRopeVertexNormal_retn_addr, p2::hk_addr__render_sprite_card_rope_normal + 6u); // 0125
 
 		// C_OP_RenderRope::RenderSpriteCard_Internal<FastRopeVertexNormalCacheAligned_t>
 		// not in use?
-		utils::hook::nop(CLIENT_BASE + USE_OFFSET(0x6218E9, 0x6191B9), 6); // 0125
-		utils::hook(CLIENT_BASE + USE_OFFSET(0x6218E9, 0x6191B9), RenderSpriteCardFastRopeVertexNormalCache_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(RenderSpriteCardFastRopeVertexNormalCache_retn_addr, CLIENT_BASE + USE_OFFSET(0x6218EF, 0x6191BF)); // 0125
+		utils::hook::nop(p2::hk_addr__render_sprite_card_rope_normal_cache, 6); // 0125
+		utils::hook(p2::hk_addr__render_sprite_card_rope_normal_cache, RenderSpriteCardFastRopeVertexNormalCache_stub, HOOK_JUMP).install()->quick(); // 0125
+		HOOK_RETN_PLACE(RenderSpriteCardFastRopeVertexNormalCache_retn_addr, p2::hk_addr__render_sprite_card_rope_normal_cache + 6u); // 0125
 
 		// C_OP_RenderSpritesTrail::Render
-		utils::hook::nop(CLIENT_BASE + USE_OFFSET(0x62281E, 0x61A0EE), 6); // 0125
-		utils::hook(CLIENT_BASE + USE_OFFSET(0x62281E, 0x61A0EE), RenderSpritesTrail_Render_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(RenderSpritesTrail_Render_retn_addr, CLIENT_BASE + USE_OFFSET(0x622824, 0x61A0F4)); // 0125
+		utils::hook::nop(p2::hk_addr__render_sprites_trail, 6); // 0125
+		utils::hook(p2::hk_addr__render_sprites_trail, RenderSpritesTrail_Render_stub, HOOK_JUMP).install()->quick(); // 0125
+		HOOK_RETN_PLACE(RenderSpritesTrail_Render_retn_addr, p2::hk_addr__render_sprites_trail + 6u); // 0125
 #endif
 
-		// Fix actual ropes
-		utils::hook::nop(CLIENT_BASE + USE_OFFSET(0xBD043, 0xB9613), 6);
-		utils::hook(CLIENT_BASE + USE_OFFSET(0xBD043, 0xB9613), RopeManager_DrawRenderCache_stub, HOOK_JUMP).install()->quick();
-		HOOK_RETN_PLACE(RopeManager_DrawRenderCache_retn_addr, CLIENT_BASE + USE_OFFSET(0xBD049, 0xB9619));
+		// Fix actual ropes :: buffer full
+		utils::hook::nop(p2::hk_addr__rope_draw_render_cache_flush, 6);
+		utils::hook(p2::hk_addr__rope_draw_render_cache_flush, RopeManager_DrawRenderCache_flush_stub, HOOK_JUMP).install()->quick();
+		HOOK_RETN_PLACE(RopeManager_DrawRenderCache_flush_retn_addr, p2::hk_addr__rope_draw_render_cache_flush + 6u);
+
+		// ^ end of batch
+		utils::hook::nop(p2::hk_addr__rope_draw_render_cache_end, 6);
+		utils::hook(p2::hk_addr__rope_draw_render_cache_end, RopeManager_DrawRenderCache_end_stub, HOOK_JUMP).install()->quick();
+		HOOK_RETN_PLACE(RopeManager_DrawRenderCache_end_retn_addr, p2::hk_addr__rope_draw_render_cache_end + 6u);
 
 
 		// C_OP_RenderSprites::Render :: fix SpriteCard UV's
-		utils::hook::nop(CLIENT_BASE + USE_OFFSET(0x6222D0, 0x619BA0), 6); // 0125
-		utils::hook(CLIENT_BASE + USE_OFFSET(0x6222D0, 0x619BA0), RenderSpriteCardNew_stub, HOOK_JUMP).install()->quick(); // 0125
-		HOOK_RETN_PLACE(RenderSpriteCardNew_retn_addr, CLIENT_BASE + USE_OFFSET(0x6222D6, 0x619BA6)); // 0125
+		utils::hook::nop(p2::hk_addr__render_sprite_card_new, 6); // 0125
+		utils::hook(p2::hk_addr__render_sprite_card_new, RenderSpriteCardNew_stub, HOOK_JUMP).install()->quick(); // 0125
+		HOOK_RETN_PLACE(RenderSpriteCardNew_retn_addr, p2::hk_addr__render_sprite_card_new + 6u); // 0125
 
 
 		// Remove world-position baking for vertices of "dynamic" static props and use SetTransform(WORLD) to transform them into the world.
@@ -4463,30 +4246,30 @@ namespace components
 		// CProcessMeshWrapper<0,0,0>::R_StudioSoftwareProcessMesh (hooked)
 		// :: transpose pPoseToWorld and use it as world-transform in 'cmeshdx8_renderpass_pre_draw'
 		// :: set pPoseToWorld to identity to remove position/normal baking
-		utils::hook::nop(STUDIORENDER_BASE + USE_OFFSET(0xA6E7, 0xA587), 6);
-		utils::hook(STUDIORENDER_BASE + USE_OFFSET(0xA6E7, 0xA587), unbake_transform::R_StudioSoftwareProcessMesh_stub, HOOK_JUMP).install()->quick();
-		HOOK_RETN_PLACE(unbake_transform::R_StudioSoftwareProcessMesh_retn_addr, STUDIORENDER_BASE + USE_OFFSET(0xA6ED, 0xA58D));
+		utils::hook::nop(p2::hk_addr__studio_software_process_mesh, 6);
+		utils::hook(p2::hk_addr__studio_software_process_mesh, unbake_transform::R_StudioSoftwareProcessMesh_stub, HOOK_JUMP).install()->quick();
+		HOOK_RETN_PLACE(unbake_transform::R_StudioSoftwareProcessMesh_retn_addr, p2::hk_addr__studio_software_process_mesh + 6u);
 
 		// restore pPoseToWorld after building the mesh ^
-		utils::hook(STUDIORENDER_BASE + USE_OFFSET(0xA949, 0xA7E9), unbake_transform::R_StudioSoftwareProcessMesh_Restore_stub, HOOK_JUMP).install()->quick();
+		utils::hook(p2::hk_addr__studio_software_process_mesh_restore, unbake_transform::R_StudioSoftwareProcessMesh_Restore_stub, HOOK_JUMP).install()->quick();
 
 		// CStudioRender::R_StudioRenderFinal
 		// :: some meshes are made up of multiple submodels or body parts, so 'cmeshdx8_renderpass_pre_draw' gets called multiple times
 		// :: we need to set the modified world-transform back to identity after we are done rendering the mesh to not affect subsequent meshes
-		utils::hook(STUDIORENDER_BASE + USE_OFFSET(0x10DB7, 0x10C57), unbake_transform::R_StudioRenderFinal_stub, HOOK_JUMP).install()->quick();
+		utils::hook(p2::hk_addr__studio_render_final, unbake_transform::R_StudioRenderFinal_stub, HOOK_JUMP).install()->quick();
 
 		// CStudioRender::R_StudioDrawPoints
 		// :: get info about the current mesh and decide if we will be fixing the baked transform or not
-		utils::hook::nop(STUDIORENDER_BASE + USE_OFFSET(0x10C3C, 0x10ADC), 6);
-		utils::hook(STUDIORENDER_BASE + USE_OFFSET(0x10C3C, 0x10ADC), unbake_transform::R_StudioDrawPoints_stub, HOOK_JUMP).install()->quick();
-		HOOK_RETN_PLACE(unbake_transform::R_StudioDrawPoints_retn_addr, STUDIORENDER_BASE + USE_OFFSET(0x10C42, 0x10AE2));
+		utils::hook::nop(p2::hk_addr__studio_draw_points, 6);
+		utils::hook(p2::hk_addr__studio_draw_points, unbake_transform::R_StudioDrawPoints_stub, HOOK_JUMP).install()->quick();
+		HOOK_RETN_PLACE(unbake_transform::R_StudioDrawPoints_retn_addr, p2::hk_addr__studio_draw_points + 6u);
 
 
 		// #
 		// commands
 
 		game::con_add_command(&xo_debug_toggle_model_info_cmd, "xo_debug_toggle_model_info", xo_debug_toggle_model_info_fn, "Toggle model name and radius visualizations");
-		game::con_add_command(&xo_mapsettings_get_unbake_info_cmd, "xo_mapsettings_get_unbake_info", xo_mapsettings_get_unbake_info_fn, "This log names of drawn models in the current frame to a logfile in portal2-rtx/logs/. Useful for MapSettings : [UNBAKE]");
+		game::con_add_command(&xo_mapsettings_get_unbake_info_cmd, "xo_mapsettings_get_unbake_info", xo_mapsettings_get_unbake_info_fn, "This log names of drawn models in the current frame to a logfile in infra-rtx/logs/. Useful for MapSettings : [UNBAKE]");
 	
 		// -----
 		m_initialized = true;
