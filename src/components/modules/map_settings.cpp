@@ -16,7 +16,8 @@ namespace components
 {
 	void map_settings::set_settings_for_map(const std::string& map_name)
 	{
-		m_map_settings.mapname = !map_name.empty() ? map_name : game::get_map_name();
+		// infra changelevels use mixed case map names
+		m_map_settings.mapname = utils::str_to_lower( !map_name.empty() ? map_name : game::get_map_name() );
 		utils::replace_all(m_map_settings.mapname, std::string("maps/"), "");		// if sp map
 		utils::replace_all(m_map_settings.mapname, std::string(".bsp"), "");
 
@@ -173,6 +174,39 @@ namespace components
 					}
 				}
 			} // end 'WATER'
+
+
+			// ####################
+			// parse 'SUN' table
+			if (config.contains("SUN"))
+			{
+				auto& sun_table = config["SUN"];
+
+				// try to find the loaded map
+				if (sun_table.contains(m_map_settings.mapname))
+				{
+					if (const auto map = sun_table[m_map_settings.mapname];
+						!map.is_empty())
+					{
+						auto& sun = m_map_settings.sun;
+
+						if (map.contains("intensity")) {
+							sun.intensity = std::max( common::toml_ext::to_float(map.at("intensity"), 1.0f), 0.0f );
+						}
+
+						if (map.contains("diameter")) {
+							sun.diameter = std::max( common::toml_ext::to_float(map.at("diameter"), 1.0f), 0.01f );
+						}
+
+						if (map.contains("pitch") && map.contains("yaw"))
+						{
+							sun.custom_direction = true;
+							sun.pitch = common::toml_ext::to_float(map.at("pitch"), 0.0f);
+							sun.yaw = common::toml_ext::to_float(map.at("yaw"), 0.0f);
+						}
+					}
+				}
+			} // end 'SUN'
 
 
 			// ####################
@@ -1304,8 +1338,6 @@ namespace components
 
 		get()->set_settings_for_map(map_name);
 
-		is_level.reset();
-		is_level.update(get_map_name());
 	}
 
 	void map_settings::on_map_unload()

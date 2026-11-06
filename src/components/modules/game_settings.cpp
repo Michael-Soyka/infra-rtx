@@ -90,11 +90,12 @@ namespace components
 				return result;
 			};
 
-		if (std::filesystem::exists("portal2-rtx\\game_settings.toml"))
+		const std::string file_path = globals::root_path + COMPMOD_ASSET_DIR "game_settings.toml";
+		if (std::filesystem::exists(file_path))
 		{
 			try
 			{
-				auto config = toml::parse("portal2-rtx\\game_settings.toml");
+				auto config = toml::parse(file_path);
 				const auto current_comp_version = utils::version_t::from_string(get_current_game_version_string());
 
 				//vars.decal_dirt_shader_contrast.set_config_name()
@@ -135,6 +136,7 @@ namespace components
 				ASSIGN(lod_forcing);
 				ASSIGN(force_graphic_settings);
 				ASSIGN(default_nocull_distance);
+				ASSIGN(world_sun_scale);
 				ASSIGN(portal_visibility_culling);
 				ASSIGN(check_nodes_for_potential_lights);
 				ASSIGN(spotlight_billboard_spawning);
@@ -149,7 +151,6 @@ namespace components
 				ASSIGN(emancipationgrill_mark_as_particle);
 				ASSIGN(emancipationgrill_mark_as_beam);
 				ASSIGN(use_brushfastpath);
-				ASSIGN(use_hardcoded_wheatly_flashlight_bts3);
 				ASSIGN(debug_info_distance);
 				ASSIGN(player_backwards_offset);
 				ASSIGN(vgui_progress_board_emissive_offset);

@@ -470,7 +470,15 @@ namespace components
 				("The default distance (radius around player) where nothing will get culled.\n"
 				 "# Value is only used by certain anti-culling modes & if there isn't a manual area/leaf override via a MapSettings entry."),
 				"2.4.0",
-				1500.00f
+				4000.00f
+			};
+
+			variable world_sun_scale =
+			{
+				"world_sun_scale",
+				"Brightness multiplier for the sun created from the static map lights. Does not affect other lights.",
+				"2.4.0",
+				1.0f
 			};
 
 			variable portal_visibility_culling =
@@ -582,14 +590,6 @@ namespace components
 				"use_brushfastpath",
 				("Enabling this sets cl_brushfastpath to true. The game will draw brushmodels in batches which might increase performance but reduce remix-ablitity?\n"
 				"# It is forced on a3 crazy box to fix a game breaking issue with a invisible un-gel-able surface but is not tested elsewhere."),
-				"2.4.0",
-				false
-			};
-
-			variable use_hardcoded_wheatly_flashlight_bts3 =
-			{
-				"use_hardcoded_wheatly_flashlight_bts3",
-				"Spawns two hardcoded remixApi lights on wheatly on a2_bts3 when he turns on his flashlight. Deprecated, map_settings system now handles that.",
 				"2.4.0",
 				false
 			};
