@@ -5,36 +5,30 @@
 This client modification is specifically made for nvidia's [rtx-remix](https://github.com/NVIDIAGameWorks/rtx-remix).  
 How does a shader based game work with remix? By manually reimplementing fixed function rendering :) 
 
-
 <div align="center" markdown="1">
 
 <img src=".github/img/logo.png" alt="Description" width="60%">
 </div>
 
-
-
 __WIP__ & __Please Note:__  
-RTX Remix was never intented to support Portal 2.  
+RTX Remix was never intented to support INFRA.  
 If you encounter crashes, broken things or similar, it's either due to incompatibility,  
 the limits of fixed function rendering or due to bugs in the compatibility mod itself.  
 
 
-### This is not trying to be a remaster.
+### This is not trying to be a remaster:
 It simply makes the game compatible with RTX Remix.  
 Please keep that in mind.
 
 </div>
 
 <br>
-<br>
 
 <div align="center" markdown="1">
 
-![img](.github/img/01.png)
 ![img](.github/img/02.png)
-</div>
 
-<br>
+</div>
 
 <div align="center" markdown="1">
 
@@ -57,14 +51,6 @@ Please keep that in mind.
 (Integration made by [Sparkles](https://github.com/Kim2091/dxvk-remix/tree/gta4-atmos-dlss5)  
 
 🔹... and much, much more ...🔹  
-
-<br>
-<br>
-
-If you want to support my work:
-
-<a href="https://patreon.com/xoxor4d"><img src=".github/img/patreon.png" width="12%"></a>  
-<a href="https://ko-fi.com/xoxor4d"><img src=".github/img/kofi.png" width="10%"></a>
 
 </div>
 
@@ -103,7 +89,7 @@ If you want to support my work:
 <br></details>
 
 
-<details><summary>Crashing, startup issues, not working ..</summary>
+<details><summary>Crashing, startup issues, not working...</summary>
 <br>
 
 - Make sure that you have no clipping software such as "medal" running in the background.  
@@ -112,15 +98,6 @@ If you want to support my work:
 	  - or install the game somewhere outside `Program Files`  
 	
 - Download and install [DirectX End-User Runtimes (June 2010)](https://www.microsoft.com/en-ie/download/details.aspx?id=8109)
-
-<br></details>
-
-
-<details><summary>Portals not showing up - Game is too dark</summary>
-<br>
-
-Make sure that you installed the [base-remix-mod](https://github.com/xoxor4d/p2-rtx-base-mod) via the installer or manually.  
-Some maps are not yet touched up, so if you are not rocking an additional community mod (for remix), some maps will be dark and water broken.
 
 <br></details>
 
@@ -154,8 +131,8 @@ Other Issue?
 
 <div align="center" markdown="1">
 
-![img](.github/img/04.png)
-![img](.github/img/03.png)
-![img](.github/img/05.png)
-![img](.github/img/06.png)
+![img](.github/img/01.jpg)
+![img](.github/img/03.jpg)
+![img](.github/img/04.jpg)
+
 </div>
