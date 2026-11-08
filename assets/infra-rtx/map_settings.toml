@@ -1,0 +1,392 @@
+# ##########################################################################################################################################
+# >> Fog Settings (DEPRECATED - use remix config vars -> volumetric system) (https://github.com/xoxor4d/p2-rtx/wiki/Map-Settings#tweakable-fog)
+#
+# ~~ Parameters: 
+# <map name> = {
+#   distance  ]     THIS =    use linear fog; larger -> less fog       [float]      (priority)
+#   density   ]  OR THAT =    use exponential fog; larger -> more fog  [float 0-1]
+#
+#   color = []                R G B transmission                       [3D Vector - 0-255]
+# }
+
+[FOG]
+
+
+# ##########################################################################################################################################
+# >> Water Settings
+#
+# :: Adjust various water related settings per map
+#    The compatibility mod always spawns a secondary surface with the same size as the original water surface.
+#
+# ~~ Parameters: 
+# <map name> = {
+#   scale =                 uv scale - small values reduce repetition while larger values will increase tiling              [float] << defaults to 1.0
+#   scale_top =             uv scale to top layer - a value of 0 will use 'scale' for top and bottom                        [float] << defaults to 0.0
+#   top_layer_offset =      can offset the dual rendered water mesh along the Z-Axis (usually the animated surface)         [float] << defaults to 0.5
+#   bottom_layer_offset =   can offset the original water mesh along the Z-Axis (usually the surface defining water color)  [float] << defaults to 0.0
+# }
+
+[WATER]
+
+
+# ##########################################################################################################################################
+# >> Override culling per game area (https://github.com/xoxor4d/p2-rtx/wiki/Map-Settings#tweakable-culling)
+#
+# :: Useful console commands:
+# :: 'xo_debug_toggle_node_vis' to visualize current node/leaf and area
+#
+# ~~ Parameters:
+# <map name> = [
+#   {
+#       in_area =       the area the player has to be in                            [int]
+#       areas = []      area/s with forced visibility                               [int array]
+#       leafs = []      leaf/s with forced visibility                               [int array]
+#       
+#       cull =          [0] disable frustum culling                                 [int 0-5]
+#                       [1] disable frustum culling in current area
+#                       [2] stock
+#                       [3] frustum culling (outside current area) + force all nodes/leafs in current area
+#                       [4] ^ + outside of current area within certain dist to player (param: nocull_dist)
+#                       [5] force all leafs/nodes within certain dist to player (param: nocull_dist)          << default
+#       
+#       nocull_dist =   distance around the player where objects wont get culled - only used on certain cull modes   [float] << defaults to 600.0
+#       
+#       ----- :: This can be used to disable frustum culling for specified areas when the player is in specified leafs 
+#             :: Useful at area crossings when used in conjunction with nocull - area-specific markers that block visibility
+#                   
+#       leaf_tweak = [        [array of structure below]
+#         {                                                                                   
+#             in_leafs = []   the leaf/s the player has to be in                      [int array]
+#                areas = []   area/s with forced visibility                           [int array]
+#                leafs = []   leaf/s with forced visibility                           [int array]
+#             nocull_dist =   uses per leaf value instead of area value if defined    [float]     << defaults to 0.0 (off)
+#         }, 
+#         { ... },
+#       ]
+#
+#       ------ :: This can be used to forcefully cull parts of the map
+#
+#       hide_areas = [        [array of structure below]
+#         {                
+#               areas = []    area/s to hide                                          [int array]
+#             N_leafs = []    only hide area/s when NOT in leaf/s                     [int array]
+#         },
+#         { ... },
+#       ]
+#
+#       hide_leafs =        force hide leaf/s                                         [int array]
+#   },  
+#   { ... },
+# ]
+
+[CULL]
+
+
+# ##########################################################################################################################################
+# >> Hide Models (https://github.com/xoxor4d/p2-rtx/wiki/Map-Settings#hide-models)
+# 
+# :: Can be used to hide models. When a certain model is used a lot, it can make sense to hide them and 
+#    manually re-add the models by adding them as references to map markers (toolkit) - will help with cpu bottlenecks)
+#
+# :: Useful console commands:
+#    > 'xo_debug_toggle_model_info' to show required prop info (name, radius)
+#
+# ~~ Parameters:
+# <map name> = {
+#   name = []             force hide models containing the specified substring                                                                [string array]
+#   radius = []           force hide models with this radius (checking for radii is generally faster and the preferred way to filter models)  [float array]
+# }
+
+[HIDEMODEL]
+
+
+# ##########################################################################################################################################
+# >> Unbake Model Transforms
+#
+# :: If a "static prop" has many unique hashes (remix) then it's likely that it's vertices contain world position data. This will prevent proper mesh-replacements in remix.
+# :: Specifying a substring of the model you want to replace here will prevent position/rotation/normal information
+#    from being backed into the model vertices and then use the fixed function world transform to transform it into the game world. 
+# :: String checks are costly so keep entries as small as possible and scope them per map if possible. Use entry 'ALL' if it's a model used throughout the game.
+# :: This will cause issues with some models (mainly ones with sub-meshes)
+# :: Do not specify models if you do not intend to replace them. There is no benefit.
+# 
+# :: Useful console command: 'xo_mapsettings_get_unbake_info' to log all currently visible model names to 'INFRA/logs/mapsettings_unbake_info.log'
+#
+# ~~ Parameters:
+# <map name> = {    per map
+#   name = []       unbake transform data from model vertices which contain the specified substring     [string array]
+# }
+#
+# ALL = []          ^ on every map                                                                      [string array]
+
+[UNBAKE]
+
+
+# ##########################################################################################################################################
+# >> Spawn unique markers meshes (https://github.com/xoxor4d/p2-rtx/wiki/Map-Settings#map-marker-spawning)
+#
+# :: Can be used as anchor mesh (same one can be spawned multiple times)
+#
+# ~~ Parameters:
+# <map name> = [                  [array of structure below]
+#   {
+#       marker    ]     THIS =    number of marker mesh - can get culled BUT that can be controlled via leaf/area forcing (initial spawning can't be forced)  [int 0-100]
+#       nocull    ]  OR THAT =    number of marker mesh - never getting culled and spawned on map load (eg: useful for distant light)                         [int 0-inf]
+#       
+#       areas = []                (opt.) only show nocull marker when player is in specified area/s                                                           [int array]
+#       N_leafs = []              (opt.) only show nocull marker when player is in ^ and NOT in specified leaf/s                                              [int array]
+#       
+#       position = []             position of the marker mesh     [3D Vector]
+#       rotation = []             rotation of the marker mesh     [3D Vector]
+#       scale = []                scale of the marker mesh        [3D Vector]
+#   },  
+#   { ... },
+# ]
+
+[MARKER]
+
+
+# ##########################################################################################################################################
+# >> Remix variable configs (https://github.com/xoxor4d/p2-rtx/wiki/Map-Settings#remix-config-loading--transitions)
+#
+# :: Can be used to adjust remix config options per map or set certain settings on certain game events such as playing sounds or choreographies.
+#    The system supports various options and can smoothly transition between remix option values.
+#
+# :: Useful console commands:  
+#    > 'xo_debug_scene_print' to print info about all choreographies to the console
+#    > 'xo_debug_sound_print' to print info about running sounds to the console
+#    > 'xo_debug_toggle_node_vis' to visualize current node/leaf and area
+#
+# ~~ Parameters:
+# <map name> = {
+#
+#   startup = []            configs that will be loaded on map-load, conf matching the map name will be auto. loaded and does not need to be specified  [array of strings]
+#
+#   -----------
+#   transitions = [         trigger loading or transition to values within configs on specified events                                                  [array of structure below]
+#     {           
+#           conf =          name of config containing remix (goal) variables                                                                            [string]
+#
+#           trigger = {     trigger config loading / transition via choreography (.vcd), sound or leaf
+#
+#               choreo  ]    THIS =                         name of choreography (.vcd) that will trigger the transition (can be a substring)           [string]
+#                       ]               |> actor =   (opt.) name of actor the event is played on                                                        [string]
+#                       ]               |> event =   (opt.) name of the event within the .vcd (can be a substr)                                         [string]
+#                       ]               |> param1 =  (opt.) name of the event within the .vcd (can be a substr)                                         [string]
+#                       ] 
+#               sound   ] OR THAT =     hash made up of name, index and position (cmd: see desc.) OR substring of soundname                             [integer] (hex format) || [string]
+#               leafs   ] OR THAT =     leaf's that will trigger the transition                                                                         [int array]
+#                                        [!] moving from one leaf to another connected & defined leaf will not trigger the transition
+#           }                                         
+#   
+#           mode =          [0] ONCE:   On Enter/Start -- [1] ONCE: On Leave/End   (will only be activated once - until map or map_settings reload)     [int 0-3]
+#                           [2] ALWAYS: On Enter/Start -- [3] ALWAYS: On Leave/End (sounds only use ONCE or ALWAYS 0-1 or 2-3)
+#           
+#           ease =          [0] LINEAR                                                                                                                  [int 0-9]
+#                           [1] SIN_IN   -- [2] SIN_OUT   -- [3] SIN_INOUT
+#                           [4] CUBIC_IN -- [5] CUBIC_OUT -- [6] CUBIC_INOUT
+#                           [7] EXPO_IN  -- [8] EXPO_OUT  -- [9] EXPO_INOUT
+#           
+#           duration =      transition time (in seconds)                                                                                                [float]
+#           delay_in =      delay start of transition (in seconds)                                                                                      [float]
+#           delay_out =     delay between end of transition and transition back to the initial starting value (in seconds) - only active if value > 0   [float]
+#     },  
+#     { ... },
+#   ]
+#   
+#   -----------
+#   texture_categories = [  # on map load only (currently) - added/removed hashes will be removed/added (inverse) on map change
+#       {
+#           category =      remix config var - texture category (eg. "rtx.lightConverter")          [string]
+#           add = []        adds specified hash/es to the category (eg. "0x5A0A67F78F95EFE5")       [string array]
+#           remove = []     removes specified hash/es from the category                             [string array]
+#       }, 
+#       { ... }
+#   ]
+# }
+
+[CONFIGVARS]
+
+
+# ##########################################################################################################################################
+# >> Spawn portals using the remix api
+#
+# :: Useful for area-connecting portals (between doors / rooms)
+#    Only two pairs per map are supported. Does not support events currently.
+#
+# :: Useful console commands:  
+#    > 'xo_debug_toggle_rayportal_info' to show rayportal info
+#
+# ~~ Parameters:
+# <map name> = [
+#   {
+#       pair =                  number of pair - only two pairs are currently supported     [int 0-1] 
+#       portals = [             define the two portals in the portal pair                   [array of structure below]
+#         {
+#            position = []      X Y Z coordinates of portal center                          [3D Vector]
+#            rotation = []      X Y Z rotation of portal                                    [3D Vector] 
+#            scale =            scale of portal                                             [2D Vector]
+#            square_mask =      0 = ellipse, 1 = square                                     [bool]
+#         }, { ... }
+#       ]
+#   },  
+#   { ... },
+# ]
+
+[PORTALS]
+
+
+# ##########################################################################################################################################
+# >> Spawn lights using the remix api (https://github.com/xoxor4d/p2-rtx/wiki/Map-Settings#spawning--animating-of-lights-via-the-remixapi)
+#
+# :: Useful console commands:  
+#    > 'xo_debug_scene_print' to print info about all choreographies to the console (choreo trigger/kill)
+#    > 'xo_debug_sound_print' to print info about running sounds to the console (sound trigger/kill)
+#    > 'xo_debug_toggle_model_info' to show required prop info (name, radius) for the 'attach' functionality
+#    > 'xo_debug_show_mesh_bone_info_attached' to show bone info for the prop the light is attached to
+#    > 'xo_debug_show_mesh_bone_info' to show bone info for all props within 'gamesettings::debug_info_distance'
+#
+# ~~ Parameters: 
+# <map name> = [
+#   {                   [array of structure below]
+#       trigger = {     (optional) trigger light creation via choreography (.vcd) or sound :: not defining this will create the light on map load 
+#       
+#                       choreo  ]    THIS =   |> choreo =         name of choreography (.vcd) that will trigger the transition (can be a substring)     [string]
+#                               ]             |> actor =   (opt.) name of actor the event is played on                                                  [string]
+#                               ]             |> event =   (opt.) name of the event within the .vcd (can be a substr)                                   [string]
+#                               ]             |> param1 =  (opt.) name of the event within the .vcd (can be a substr)                                   [string]
+#                               ] 
+#                       sound   ] OR THAT =   hash made up of name, index and position (cmd: see desc.)                                                 [integer] (hex format)
+#       
+#                               |> delay =    delay spawn after trigger (in seconds)                                                                    [float]
+#                               |> always =   re-triggering the event again will spawn a new light instance everytime (defaults to false)               [bool]
+#       }
+#
+#       -----------
+#       kill = {        (optional) kill light via choreography (.vcd) or sound :: not defining this OR empty string/hash -> light will loop until the map gets unloaded or once loop is complete when run_once is true
+
+#                       choreo  ]    THIS =   name of choreography (.vcd) (can be a substring)                                                          [string]
+#                       sound   ] OR THAT =   hash made up of name, index and position (cmd: see desc.)                                                 [integer] (hex format)
+#       
+#                               |> delay =    delay kill after vcd was triggered (in seconds)                                                           [float]
+#       }
+#
+#       -----------
+#       attach = {      (optional) attach light to a prop so it moves with the prop - points are relative to the prop the light gets attached to
+#
+#                       radius  ]    THIS =         radius of prop (recommended) (cmd: see desc.)                                                       [float]
+#                       name    ] OR THAT =         model name that contains this substring (cmd: see desc.)                                            [string]
+#                         
+#                               |> bounds = []      (opt.) define bounds (min/max) where the light can spawn and attach to the prop                     [2x 3D Vector :: [minX, minY, minZ, maxX, maxY, maxZ]
+#                               |> bone_index =     (opt.) THIS     attach light to bone with this index (cmd: see desc.)                               [uint]
+#                               |> bone_name  =     (opt.) OR THAT  attach light to bone with this name (slower) (cmd: see desc.)                       [string]
+#       }
+#
+#       -----------
+#       points = [      (required) list of points that will make up a spline the light will move along                                                  [array of structure below]
+#       {
+#                       position = []           X Y Z coordinates of light                                                                              [3D Vector]
+#                                                [!] first point needs to define a position
+#                                                [!] following ones will use the last defined position if position is not defined
+#       
+#                       radiance = []           R G B radiance of light (defaults to 10 10 10)                                                          [3D Vector 0-inf]
+#                       scalar =                ^ radiance scalar
+#                       radius =                radius of light (defaults to 1.0)                                                                       [float]
+#                       smoothness =            curve smoothness (defaults to 0.5 - values above 1 might produce odd results)                           [float 0-1]
+#                       timepoint =             time in seconds at which the light arrives at the point (evenly distributed if not specified)           [float]
+#                                                [!] first timepoint is always 0
+#                                                [!] timepoints can not be out of order
+#                                                [!] last point requires a timepoint and defines the total duration
+#       
+#                       direction = []          light direction (will be normalized in code) (defaults to 0 0 1)                                        [3D Vector 0-inf] (will be normalized in code)
+#                       angle_offset_attached = light direction offset when light is attached to a bone                                                 [3D Vector - Euler Angles]
+#                       degrees =               cone angle - anything besides 180 turns ON light shaping (defaults to 180)                              [float 0-180]
+#                       softness =              cone softness (defaults to 0)                                                                           [float 0-PI]
+#                       exponent =              focus expo (defaults to 0)                                                                              [float]
+#                       volumetric_scale =      volumetric scale of light (defaults to 1)                                                               [float]
+#       }, { ... }]
+#
+#       -----------
+#       run_once:         ]    THIS =           destroy light after reaching the last point (default: false)                                            [bool]
+#       loop:             ] OR THAT =           create a looping light that restarts at the first point after reaching the last point (default: false)  [bool]
+#       loop_smoothing:   ] OR THAT =           automatically connect and smooth the start and end point (default: false)                               [bool]
+#                                                [!] requires 'loop' to be true
+#                                                [!] only position + timepoint is used from the last point 
+#   },  
+#   { ... },
+# ]
+
+[LIGHTS]
+
+
+# ##########################################################################################################################################
+# >> Sun settings
+#
+# :: Adjusts the sun created from the static map lights. Values are read on map load and on 'Reload MapSettings'.
+#
+# ~~ Parameters (all optional):
+# <map name> = {
+#   intensity =     brightness multiplier, gets multiplied with 'world_sun_scale' (game_settings.toml)                [float] << defaults to 1.0
+#   pitch =         sun direction, same values as 'pitch' of light_environment (-90 = straight down)                  [float]
+#   yaw =           sun direction, same values as the yaw of 'angles' of light_environment (needs pitch + yaw)        [float]
+#   diameter =      visible size of the sun in degrees, larger values give softer shadows                             [float] << defaults to 1.0
+# }
+
+[SUN]
+    main_menu                   = { intensity = 1.0, pitch = -15.0, yaw = 120.0, diameter = 1.0 }  # map rgb 1.5686 1.2984 0.9395
+    infra_c1_m1_office          = { intensity = 1.0, pitch = -15.0, yaw = 120.0, diameter = 1.0 }  # map rgb 1.5686 1.2984 0.9395
+    infra_c2_m1_reserve1        = { intensity = 1.0, pitch = -35.0, yaw = 232.0, diameter = 1.0 }  # map rgb 1.3772 1.2900 1.0253
+    infra_c2_m2_reserve2        = { intensity = 1.0, pitch = -40.0, yaw = 208.0, diameter = 1.0 }  # map rgb 1.5728 1.4745 1.1035
+    infra_c2_m3_reserve3        = { intensity = 1.0, pitch = -40.0, yaw = 208.0, diameter = 1.0 }  # map rgb 1.0858 0.9232 0.6838
+    infra_c3_m2_tunnel2         = { intensity = 1.0, pitch = -50.0, yaw = 114.0, diameter = 1.0 }  # map rgb 1.5302 1.3663 1.1392
+    infra_c3_m3_tunnel3         = { intensity = 1.0, pitch = -50.0, yaw = 114.0, diameter = 1.0 }  # map rgb 2.1936 1.9112 1.4093
+    infra_c3_m4_tunnel4         = { intensity = 1.0, pitch = -50.0, yaw = 114.0, diameter = 1.0 }  # map rgb 2.1936 1.9112 1.4093
+    infra_c4_m2_furnace         = { intensity = 1.0, pitch = -45.0, yaw = 111.0, diameter = 1.0 }  # map rgb 1.7003 1.3888 1.0264
+    infra_c4_m3_tower           = { intensity = 1.0, pitch = -45.0, yaw = 111.0, diameter = 1.0 }  # map rgb 1.7003 1.3888 1.0264
+    infra_c5_m1_watertreatment  = { intensity = 1.0, pitch = -40.0, yaw = 91.0, diameter = 1.0 }  # map rgb 1.8772 1.6078 1.1364
+    infra_c5_m2_sewer           = { intensity = 1.0, pitch = -34.0, yaw = 69.0, diameter = 1.0 }  # map rgb 1.9659 1.8041 1.2316
+    infra_c6_m2_metro           = { intensity = 1.0, pitch = -34.0, yaw = 69.0, diameter = 1.0 }  # map rgb 1.9659 1.8041 1.2316
+    infra_c6_m3_metroride       = { intensity = 1.0, pitch = -30.0, yaw = 51.0, diameter = 1.0 }  # map rgb 1.2500 1.2500 1.2500
+    infra_c6_m6_central         = { intensity = 1.0, pitch = -30.0, yaw = 51.0, diameter = 1.0 }  # map rgb 2.5592 1.9838 1.3550
+    infra_c7_m1_servicetunnel   = { intensity = 1.0, pitch = -30.0, yaw = 51.0, diameter = 1.0 }  # map rgb 2.5592 1.9838 1.3550
+    infra_c7_m1b_skyscraper     = { intensity = 1.0, pitch = -30.0, yaw = 39.0, diameter = 1.0 }  # map rgb 2.1936 1.7004 1.1615
+    infra_c7_m2_bunker          = { intensity = 1.0, pitch = -30.0, yaw = 51.0, diameter = 1.0 }  # map rgb 2.5592 1.9838 1.3550
+    infra_c7_m3_stormdrain      = { intensity = 1.0, pitch = -30.0, yaw = 36.0, diameter = 1.0 }  # map rgb 0.9636 0.8346 0.5745
+    infra_c7_m4_cistern         = { intensity = 1.0, pitch = -30.0, yaw = 36.0, diameter = 1.0 }  # map rgb 0.9636 0.8346 0.5745
+    infra_c7_m5_powerstation    = { intensity = 1.0, pitch = -15.0, yaw = 53.0, diameter = 1.0 }  # map rgb 0.1910 0.1417 0.0956
+    infra_c8_m1_powerstation2   = { intensity = 1.0, pitch = -15.0, yaw = 53.0, diameter = 1.0 }  # map rgb 0.1877 0.0991 0.0575
+    infra_c8_m3_isle1           = { intensity = 1.0, pitch = -5.0, yaw = 15.0, diameter = 1.0 }  # map rgb 0.1669 0.0492 0.0208
+    infra_c8_m4_isle2           = { intensity = 1.0, pitch = -5.0, yaw = 15.0, diameter = 1.0 }  # map rgb 0.0482 0.0165 0.0136
+    infra_c8_m5_isle3           = { intensity = 1.0, pitch = -5.0, yaw = 15.0, diameter = 1.0 }  # map rgb 0.0482 0.0165 0.0136
+    infra_c8_m6_business        = { intensity = 1.0, pitch = -20.0, yaw = 128.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c8_m7_business2       = { intensity = 1.0, pitch = -20.0, yaw = 128.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c8_m8_officeblackout  = { intensity = 1.0, pitch = -10.0, yaw = 5.0, diameter = 1.0 }  # map rgb 0.0067 0.0000 0.0000
+    infra_c9_m1_rails           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c9_m2_tenements       = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c9_m3_river           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c9_m4_villa           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c9_m5_field           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c10_m1_npp            = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c10_m3_roof           = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c11_ending_1          = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c11_ending_2          = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+    infra_c11_ending_3          = { intensity = 1.0, pitch = -20.0, yaw = 116.0, diameter = 1.0 }  # map rgb 0.0000 0.0000 0.0000
+
+    # no sun in map: infra_c3_m1_tunnel, infra_c5_m2b_sewer2, infra_c6_m1_sewer3, infra_c6_m4_waterplant, infra_c6_m5_minitrain, infra_c10_m2_reactor, infra_ee_binary, infra_ee_city_gates, infra_ee_cubes, infra_ee_hallway, infra_ee_wasteland
+
+
+
+# ##########################################################################################################################################
+# >> Set cvars on map load
+#
+# :: Some maps or workflows might require setting cvars on certain maps
+#
+# ~~ Parameters: 
+# <map name> = [              [string array]
+#   "cvar1 val",
+#   "cvar2 val",
+# ]
+
+[CVARS]
+infra_c1_m1_office = [
+]

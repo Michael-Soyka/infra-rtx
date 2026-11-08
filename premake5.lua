@@ -32,7 +32,7 @@ dependencies.load()
 
 workspace "p2-rtx"
 
-	startproject "p2-rtx"
+	startproject "infra-rtx"
 	location "./build"
 	objdir "%{wks.location}/obj"
 	targetdir "%{wks.location}/bin/%{cfg.buildcfg}"
@@ -131,7 +131,7 @@ workspace "p2-rtx"
 
 	-- Project
 
-	project "p2-rtx"
+	project "infra-rtx"
 		kind "SharedLib"
 		language "C++"
 
@@ -166,7 +166,7 @@ workspace "p2-rtx"
 				print ("Setup paths using environment variable 'PORTAL2_ROOT' :: '" .. os.getenv("PORTAL2_ROOT") .. "'")
 				targetdir(os.getenv("PORTAL2_ROOT"))
 				debugdir (os.getenv("PORTAL2_ROOT"))
-				debugcommand (os.getenv("PORTAL2_ROOT") .. "/" .. "run-p2-rtx.bat")
+				debugcommand (os.getenv("PORTAL2_ROOT") .. "/" .. "run-infra-rtx.bat")
 			end
 		filter {}
 
@@ -175,7 +175,7 @@ workspace "p2-rtx"
 				print ("Setup paths using environment variable 'PORTAL2_SEC_ROOT' :: '" .. os.getenv("PORTAL2_SEC_ROOT") .. "'")
 				targetdir(os.getenv("PORTAL2_SEC_ROOT"))
 				debugdir (os.getenv("PORTAL2_SEC_ROOT"))
-				debugcommand (os.getenv("PORTAL2_SEC_ROOT") .. "/" .. "run-p2-rtx.bat")
+				debugcommand (os.getenv("PORTAL2_SEC_ROOT") .. "/" .. "run-infra-rtx.bat")
 			end
 		filter {}
 		

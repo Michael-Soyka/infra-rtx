@@ -63,7 +63,7 @@ BEGIN
             VALUE "FileDescription", "INFRA RTX Remix Compatibility Mod"
             VALUE "InternalName", "infra-rtx"
             VALUE "LegalCopyright", "xoxor4d.github.io"
-            VALUE "OriginalFilename", "p2-rtx.dll"
+            VALUE "OriginalFilename", "infra-rtx.dll"
             VALUE "ProductName", "infra-rtx"
         END
     END

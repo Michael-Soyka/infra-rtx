@@ -30,7 +30,7 @@ const std::string comp_mod_zip_name = "INFRA-Remix-CompatibilityMod";
 const wchar_t* comp_mod_zip_name_wide = L"INFRA-Remix-CompatibilityMod";
 #define COMP_MOD_FOLDER "infra-rtx"
 const char* comp_mod_folder = "infra-rtx";
-const char* comp_mod_dll = "p2-rtx.dll";
+const char* comp_mod_dll = "infra-rtx.dll";
 
 struct RemoteModConfig
 {
@@ -58,15 +58,16 @@ const RemoteModConfig base_mod =
 {
 	"Base Remix-Mod",
 	"xoxor4d",
-	"p2-rtx-base-mod",
+	"michaelsoyka",
+	"infra-rtx-base-mod",
 	"master",
-	"https://github.com/xoxor4d/p2-rtx-base-mod",
-	"https://github.com/xoxor4d/p2-rtx-base-mod/archive/refs/heads/master.zip",
-	"p2-rtx-base-mod-master/mods",
+	"https://github.com/Michael-Soyka/infra-rtx-base-mod",
+	"https://github.com/Michael-Soyka/infra-rtx-base-mod/archive/refs/heads/master.zip",
+	"infra-rtx-base-mod-master/mods",
 	"mods",
-	"portal2rtx",
-	"portal2rtx_commit.txt",
-	"portal2rtx_delivery.txt",
+	"infrartx",
+	"infrartx_commit.txt",
+	"infrartx_delivery.txt",
 	"Required: Download and extract the base remix-mod? You can skip this if you've installed it manually.",
 	"It contains actual remix replacements such as PBR textures, mesh fixes etc.\n" PAD_INL "Download size: ~300mb",
 	"A newer version of the base remix mod is available on GitHub.\n\n" PAD_INL "Would you like to update?",
@@ -1451,7 +1452,7 @@ int main()
 	Sleep(200);
 
 	log_default(true);
-	std::cout << PAD << "Portal 2 - RTX Remix Compatibility Mod Installer (https://github.com/xoxor4d/p2-rtx)\n";
+	std::cout << PAD << "Portal 2 - RTX Remix Compatibility Mod Installer (https://github.com/Michael-Soyka/infra-rtx)\n";
 	log_default();
 	std::cout << PAD << "- Make sure you've placed both the installer and the 'Portal2-Remix-CompatibilityMod-X.X.X.zip' into the same folder.\n";
 	std::cout << PAD << "- If installation fails, refer to the release page on GitHub for manual install instructions.\n\n\n";
@@ -1578,7 +1579,7 @@ int main()
 		if (!has_remix_comp_mod)
 		{
 			// steam launch warning
-			MessageBoxA(nullptr, "Running the game via Steam is NOT supported!\nRun the game using run-p2-rtx.bat.\n", "IMPORTANT", MB_OK | MB_ICONWARNING);
+			MessageBoxA(nullptr, "Running the game via Steam is NOT supported!\nRun the game using run-infra-rtx.bat.\n", "IMPORTANT", MB_OK | MB_ICONWARNING);
 		}
 
 		// backup some files

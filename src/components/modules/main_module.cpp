@@ -1899,7 +1899,7 @@ namespace components
 		{  0.0f,   0.0f,  1280.0f,  1.0f },
 		{ 10.0f,  15.0f,   800.0f,  1.0f },
 		{  5.0f,  10.0f,  1024.0f,  1.0f },
-		{  0.0f,   0.0f,  1280.0f,  0.0f },
+		{  0.0f,   0.0f,  1280.0f,  0.1f },
 		{ 36.0f, 144.0f,   720.0f,  1.0f },
 		{  0.0f,   0.0f,  1280.0f,  1.0f },
 	};
@@ -2047,9 +2047,6 @@ namespace components
 		// disable fog
 		game::cvar_uncheat_and_set_int("fog_override", 1);
 		game::cvar_uncheat_and_set_int("fog_enable", 0);
-
-		// disable far clip from env_fog_controller
-		game::cvar_uncheat_and_set_int("r_farz", 100000);
 
 		//float ms = 0.0f;
 		//bench.now(&ms);

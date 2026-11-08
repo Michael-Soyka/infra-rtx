@@ -70,7 +70,7 @@ If you want to support my work:
 
 
 ## Installation / Usage
-- Download the latest [release](https://github.com/xoxor4d/p2-rtx/releases) and follow instructions found __there__.
+- Download the latest [release](https://github.com/Michael-Soyka/infra-rtx/releases) and follow instructions found __there__.
 
 <br>
 
@@ -134,7 +134,7 @@ Some maps are not yet touched up, so if you are not rocking an additional commun
 <br></details>
 
 Other Issue?
-> Look at [Closed Issues](https://github.com/xoxor4d/p2-rtx/issues?q=is%3Aissue+is%3Aclosed) or [Discussions](https://github.com/xoxor4d/p2-rtx/discussions) to see if people had similar issues
+> Look at [Closed Issues](https://github.com/Michael-Soyka/infra-rtx/issues?q=is%3Aissue+is%3Aclosed) or [Discussions](https://github.com/Michael-Soyka/infra-rtx/discussions) to see if people had similar issues
 
 <br>
 
